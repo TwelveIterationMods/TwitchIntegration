@@ -197,7 +197,7 @@ public class GuiTwitchChannels extends GuiScreenBase {
 					channel = new TwitchChannel(channelName);
 					channel.setActive(true);
 					channel.setTargetTab(BetterMinecraftChatAPI.getChatChannel("*", false));
-					TwitchIntegration.getTwitchManager().addTwitchChannel(channel);
+					TwitchIntegration.getTwitchManager().addNewChannel(channel);
 				}
 				setSelectedChannel(channel);
 			}

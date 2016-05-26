@@ -9,6 +9,7 @@ import net.blay09.mods.bmc.twitchintegration.gui.GuiTwitchChannels;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchBadge;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
@@ -43,14 +44,13 @@ public class TwitchIntegration implements IntegrationModule {
 		MinecraftForge.EVENT_BUS.register(this);
 
 		ClientCommandHandler.instance.registerCommand(new CommandTwitch());
-
-		TwitchIntegrationConfig.load(new File(event.getModConfigurationDirectory(), "BetterMinecraftChat/twitchintegration.json"));
 	}
 
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
 		twitchManager = new TwitchManager();
 		twitchChatHandler = new TwitchChatHandler(twitchManager);
+		TwitchIntegrationConfig.load(new File(Minecraft.getMinecraft().mcDataDir, "config/BetterMinecraftChat/twitchintegration.json"));
 	}
 
 	@Mod.EventHandler

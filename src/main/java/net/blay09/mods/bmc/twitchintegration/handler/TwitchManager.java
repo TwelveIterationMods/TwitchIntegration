@@ -8,6 +8,7 @@ import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
 import net.blay09.mods.bmc.api.TokenPair;
 import net.blay09.mods.bmc.api.chat.IChatChannel;
 import net.blay09.mods.bmc.api.chat.MessageStyle;
+import net.blay09.mods.bmc.chat.emotes.twitch.BTTVChannelEmotes;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
 
@@ -24,6 +25,7 @@ public class TwitchManager {
 
 	public void addChannel(TwitchChannel channel) {
 		channels.put(channel.getName().toLowerCase(), channel);
+		new BTTVChannelEmotes(channel.getName());
 	}
 
 	public Collection<TwitchChannel> getChannels() {
@@ -42,6 +44,15 @@ public class TwitchManager {
 			TwitchChannel channel = new TwitchChannel(tokenPair.getUsername());
 			channel.setActive(true);
 			channels.put(channel.getName().toLowerCase(), channel);
+
+			IChatChannel twitchTab = BetterMinecraftChatAPI.getChatChannel(channel.getName(), true);
+			twitchTab.setOutgoingPrefix("/twitch #" + channel.getName().toLowerCase() + " ");
+			if(channel.getTargetTabName().equals(channel.getName())) {
+				twitchTab.setDisplayChannel(null);
+			} else {
+				twitchTab.setDisplayChannel(BetterMinecraftChatAPI.getChatChannel(channel.getTargetTabName(), false));
+			}
+			BetterMinecraftChatAPI.saveChannels();
 		}
 
 		for(TwitchChannel channel : channels.values()) {
@@ -101,7 +112,8 @@ public class TwitchManager {
 		return channels.get(channel.charAt(0) == '#' ? channel.substring(1).toLowerCase() : channel.toLowerCase());
 	}
 
-	public void addTwitchChannel(TwitchChannel channel) {
+	public void addNewChannel(TwitchChannel channel) {
+		new BTTVChannelEmotes(channel.getName());
 		channels.put(channel.getName().toLowerCase(), channel);
 		updateChannelStates();
 		TwitchIntegrationConfig.save();
