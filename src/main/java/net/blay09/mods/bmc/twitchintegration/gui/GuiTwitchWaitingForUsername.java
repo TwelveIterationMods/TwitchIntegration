@@ -15,8 +15,8 @@ public class GuiTwitchWaitingForUsername extends GuiScreenBase {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		drawCenteredString(mc.fontRendererObj, I18n.format(TwitchIntegration.MOD_ID + ":gui.awaitingResponse.status", TextFormatting.YELLOW + I18n.format(TwitchIntegration.MOD_ID + ":gui.awaitingResponse.requestingUsername")), width / 2, height / 2 - 20, 0xFFFFFF);
-		drawCenteredString(mc.fontRendererObj, TextFormatting.GRAY + TwitchIntegration.MOD_ID + ":gui.awaitingResponse.pleaseWait", width / 2, height / 2 + 10, 0xFFFFFF);
+		drawCenteredString(mc.fontRendererObj, I18n.format("twitchintegration:gui.awaitingResponse.status", TextFormatting.YELLOW + I18n.format("twitchintegration:gui.awaitingResponse.requestingUsername")), width / 2, height / 2 - 20, 0xFFFFFF);
+		drawCenteredString(mc.fontRendererObj, TextFormatting.GRAY + I18n.format("twitchintegration:gui.awaitingResponse.pleaseWait"), width / 2, height / 2 + 10, 0xFFFFFF);
 	}
 
 	@Override

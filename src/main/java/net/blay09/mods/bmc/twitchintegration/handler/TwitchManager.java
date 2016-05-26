@@ -40,9 +40,12 @@ public class TwitchManager {
 	public void connect() {
 		TokenPair tokenPair = BetterMinecraftChatAPI.getAuthManager().getToken(TwitchIntegration.MOD_ID);
 
-		if(tokenPair != null && channels.containsKey(tokenPair.getUsername().toLowerCase())) {
+		if(tokenPair != null && !channels.containsKey(tokenPair.getUsername().toLowerCase())) {
 			TwitchChannel channel = new TwitchChannel(tokenPair.getUsername());
 			channel.setActive(true);
+			if(BetterMinecraftChatAPI.getChatChannel("*", false) != null) {
+				channel.setTargetTabName("*");
+			}
 			channels.put(channel.getName().toLowerCase(), channel);
 
 			IChatChannel twitchTab = BetterMinecraftChatAPI.getChatChannel(channel.getName(), true);

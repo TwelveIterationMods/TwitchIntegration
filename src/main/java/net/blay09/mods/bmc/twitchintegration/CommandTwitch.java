@@ -43,7 +43,12 @@ public class CommandTwitch extends CommandBase {
 		if(twitchClient != null) {
 			if(args[0].startsWith("#")) {
 				twitchClient.send(args[0], message);
-				twitchChatHandler.onChatMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient), message);
+				if(message.startsWith("/me ")) {
+					message = message.substring(4);
+					twitchChatHandler.onActionMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient), message);
+				} else {
+					twitchChatHandler.onChatMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient), message);
+				}
 			} else {
 				twitchClient.getTwitchCommands().whisper(args[0], message);
 				twitchChatHandler.onWhisperMessage(twitchClient, twitchChatHandler.getThisUser(twitchClient), twitchChatHandler.getUser(args[0]), message);

@@ -55,6 +55,7 @@ public class GuiTwitchAuthentication extends GuiScreenBase {
 				TwitchIntegrationConfig.useAnonymousLogin = isChecked;
 			}
 		};
+		chkAnonymous.enabled = false;
 		buttonList.add(chkAnonymous);
 
 		btnConnect = new GuiButton(3, width / 2, height / 2 + 65, 100, 20, I18n.format(TwitchIntegration.MOD_ID + ":gui.authentication.connect"));
