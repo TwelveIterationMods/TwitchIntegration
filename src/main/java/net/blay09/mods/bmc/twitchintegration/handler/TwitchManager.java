@@ -36,11 +36,18 @@ public class TwitchManager {
 	}
 
 	public void connect() {
+		TokenPair tokenPair = BetterMinecraftChatAPI.getAuthManager().getToken(TwitchIntegration.MOD_ID);
+
+		if(tokenPair != null && channels.containsKey(tokenPair.getUsername().toLowerCase())) {
+			TwitchChannel channel = new TwitchChannel(tokenPair.getUsername());
+			channel.setActive(true);
+			channels.put(channel.getName().toLowerCase(), channel);
+		}
+
 		for(TwitchChannel channel : channels.values()) {
 			channel.setTargetTab(BetterMinecraftChatAPI.getChatChannel(channel.getTargetTabName(), false));
 		}
 
-		TokenPair tokenPair = BetterMinecraftChatAPI.getAuthManager().getToken(TwitchIntegration.MOD_ID);
 		if(tokenPair != null) {
 			String token = tokenPair.getToken().startsWith("oauth:") ? tokenPair.getToken() : "oauth:" + tokenPair.getToken();
 			IRCConfiguration.IRCConfigurationBuilder builder = TMIClient.defaultBuilder().debug(true).nick(tokenPair.getUsername()).password(token);
