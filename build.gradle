@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-    deobfCompile "net.blay09.mods:BetterMinecraftChat:2.0.2"
+    deobfCompile "net.blay09.mods:BetterMinecraftChat:2.0.3"
     shade "net.blay09.javatmi:JavaTMI:0.1.23"
     shade "net.blay09:javairc:0.0.13"
 }
