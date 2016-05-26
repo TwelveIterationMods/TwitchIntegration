@@ -18,12 +18,12 @@ public class TwitchIntegrationConfig {
 
 	public static boolean useAnonymousLogin;
 	public static boolean showWhispers;
-	public static String singleMessageFormat;
-	public static String multiMessageFormat;
-	public static String singleActionFormat;
-	public static String multiActionFormat;
-	public static String whisperMessageFormat;
-	public static String whisperActionFormat;
+	public static String singleMessageFormat = "%u: %m";
+	public static String multiMessageFormat = "[%c] %u: %m";
+	public static String whisperMessageFormat = "%u \u25b6 %r: %m";
+	public static String singleActionFormat = "%u %m";
+	public static String multiActionFormat = "[%c] %u %m";
+	public static String whisperActionFormat = "%u \u25b6 %r : %m";
 
 	public static void load(File configFile) {
 		TwitchIntegrationConfig.configFile = configFile;
@@ -47,12 +47,12 @@ public class TwitchIntegrationConfig {
 
 	private static void load(JsonObject jsonRoot, TwitchManager twitchManager) {
 		JsonObject jsonFormat = jsonRoot.getAsJsonObject("format");
-		singleMessageFormat = jsonStringOr(jsonFormat, "singleMessage", "%u: %m");
-		multiMessageFormat = jsonStringOr(jsonFormat, "multiMessage", "[%c] %u: %m");
-		whisperMessageFormat = jsonStringOr(jsonFormat, "whisperMessage", "%u \u25b6 %r: %m");
-		singleActionFormat = jsonStringOr(jsonFormat, "singleEmote", "%u %m");
-		multiActionFormat = jsonStringOr(jsonFormat, "multiEmote", "[%c] %u %m");
-		whisperActionFormat = jsonStringOr(jsonFormat, "whisperEmote", "%u \u25b6 %r : %m");
+		singleMessageFormat = jsonStringOr(jsonFormat, "singleMessage", singleMessageFormat);
+		multiMessageFormat = jsonStringOr(jsonFormat, "multiMessage", multiMessageFormat);
+		whisperMessageFormat = jsonStringOr(jsonFormat, "whisperMessage", whisperMessageFormat);
+		singleActionFormat = jsonStringOr(jsonFormat, "singleEmote", singleActionFormat);
+		multiActionFormat = jsonStringOr(jsonFormat, "multiEmote", multiActionFormat);
+		whisperActionFormat = jsonStringOr(jsonFormat, "whisperEmote", whisperActionFormat);
 		useAnonymousLogin = jsonRoot.has("anonymousLogin") && jsonRoot.get("anonymousLogin").getAsBoolean();
 		showWhispers = jsonRoot.has("showWhispers") && jsonRoot.get("showWhispers").getAsBoolean();
 		JsonArray jsonChannels = jsonRoot.getAsJsonArray("channels");
