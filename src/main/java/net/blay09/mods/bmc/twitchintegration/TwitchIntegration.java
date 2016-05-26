@@ -73,7 +73,9 @@ public class TwitchIntegration implements IntegrationModule {
 
 	@SubscribeEvent
 	public void onWorldJoined(FMLNetworkEvent.ClientConnectedToServerEvent event) {
-		twitchManager.connect();
+		if(!twitchManager.isConnected()) {
+			twitchManager.connect();
+		}
 	}
 
 	@Override
