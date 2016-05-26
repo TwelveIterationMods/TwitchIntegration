@@ -1,0 +1,16 @@
+[
+{
+  "modid": "betterminecraftchat",
+  "name": "BetterMinecraftChat",
+  "description": "Emoticons, Image Preview, Tabs and Filters. Client-side only.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["BlayTheNinth"],
+  "credits": "BlayTheNinth",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
