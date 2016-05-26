@@ -28,6 +28,11 @@ public class CommandTwitch extends CommandBase {
 	}
 
 	@Override
+	public int getRequiredPermissionLevel() {
+		return 0;
+	}
+
+	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if(args.length < 2) {
 			throw new WrongUsageException(getCommandUsage(sender));
