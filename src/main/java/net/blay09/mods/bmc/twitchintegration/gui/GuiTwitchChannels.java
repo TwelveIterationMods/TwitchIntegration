@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.blay09.mods.bmc.BetterMinecraftChat;
 import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
 import net.blay09.mods.bmc.api.chat.IChatChannel;
+import net.blay09.mods.bmc.api.chat.MessageStyle;
 import net.blay09.mods.bmc.balyware.gui.GuiButtonLink;
 import net.blay09.mods.bmc.balyware.gui.GuiOptionGroup;
 import net.blay09.mods.bmc.gui.GuiScreenBase;
@@ -270,6 +271,7 @@ public class GuiTwitchChannels extends GuiScreenBase {
 			}
 			IChatChannel twitchTab = BetterMinecraftChatAPI.getChatChannel(selectedChannel.getName(), true);
 			twitchTab.setOutgoingPrefix("/twitch #" + selectedChannel.getName().toLowerCase() + " ");
+			twitchTab.setMessageStyle(selectedChannel.isActive() ? MessageStyle.Chat : MessageStyle.Hidden);
 			if(selectedChannel.getTargetTabName().equals(selectedChannel.getName())) {
 				twitchTab.setDisplayChannel(null);
 			} else {

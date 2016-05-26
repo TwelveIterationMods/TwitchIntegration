@@ -1,16 +1,23 @@
 package net.blay09.mods.bmc.twitchintegration;
 
+import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 public class TwitchIntegrationConfig {
 
@@ -28,7 +35,7 @@ public class TwitchIntegrationConfig {
 	public static void load(File configFile) {
 		TwitchIntegrationConfig.configFile = configFile;
 		Gson gson = new Gson();
-		try (FileReader reader = new FileReader(configFile)) {
+		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(configFile), Charsets.UTF_8)) {
 			TwitchIntegrationConfig.load(gson.fromJson(reader, JsonObject.class), TwitchIntegration.getTwitchManager());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -37,7 +44,7 @@ public class TwitchIntegrationConfig {
 
 	public static void save() {
 		Gson gson = new Gson();
-		try (JsonWriter writer = new JsonWriter(new FileWriter(configFile))) {
+		try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(configFile), Charsets.UTF_8))) {
 			writer.setIndent("  ");
 			gson.toJson(save(new JsonObject(), TwitchIntegration.getTwitchManager()), writer);
 		} catch (IOException e) {
