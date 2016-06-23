@@ -1,3 +1,11 @@
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+apply from: 'gradle/scripts/dependencies.gradle'
+apply from: 'dependencies.gradle'
+
+apply from: 'gradle/scripts/common.gradle'
+apply from: 'gradle/scripts/with-api.gradle'
+
 buildscript {
     repositories {
         jcenter()
@@ -10,49 +18,21 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'maven'
 
 def BUILD_NUMBER = System.getenv("BUILD_NUMBER") ?: "0"
-def MAVEN_REPO = System.getenv("MAVEN_REPO") ?: ""
-def MAVEN_USERNAME = System.getenv("MAVEN_USERNAME") ?: ""
-def MAVEN_PASSWORD = System.getenv("MAVEN_PASSWORD") ?: ""
 
-version = "1.0." + BUILD_NUMBER
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+version = major_version + "." + minor_version + "." + BUILD_NUMBER
 group = "net.blay09.mods"
-archivesBaseName = "TwitchIntegration"
+archivesBaseName = mod_name + "_" + minecraft_version
 
 minecraft {
-    version = "1.9.4-12.17.0.1909-1.9.4"
+    version = minecraft_version + "-" + forge_version
     runDir = "run"
-    
-    mappings = "snapshot_20160518"
-}
-
-reobf {
-    jar {
-        extraLines "PK: net/blay09/javairc net/blay09/mods/bmc/twitchintegration/irc"
-        extraLines "PK: net/blay09/javatmi net/blay09/mods/bmc/twitchintegration/tmi"
-    }
-}
-
-configurations {
-    shade
-    compile.extendsFrom shade
-}
-
-repositories {
-    maven {
-        url "http://repo.blay09.net"
-    }
-}
-
-dependencies {
-    deobfCompile "net.blay09.mods:BetterMinecraftChat:2.0.3"
-    shade "net.blay09.javatmi:JavaTMI:0.1.23"
-    shade "net.blay09:javairc:0.0.13"
+    useDepAts = true
+    mappings = mappings_version
 }
 
 processResources{
@@ -70,55 +50,9 @@ processResources{
     }
 }
 
-jar {
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep)) {
-            exclude 'META-INF', 'META-INF/**'
-        }
-    }
-    from sourceSets.api.output
-    appendix "mc" + minecraft.version
-}
-
-sourceJar {
-    appendix "mc" + minecraft.version
-}
-
-task jarDev(type: Jar) {
-    from sourceSets.main.output
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    classifier "dev"
-    appendix "mc" + minecraft.version
-}
-
-artifacts {
-    archives jarDev
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: MAVEN_REPO) {
-                authentication(userName: MAVEN_USERNAME, password: MAVEN_PASSWORD)
-            }
-
-            pom {
-                groupId = project.group
-                version = project.version
-                artifactId = project.archivesBaseName
-            }
-
-            pom.withXml {
-                asNode().dependencies.dependency.findAll {
-                    it.scope.text() == "compile"
-                }.each {
-                    if(it.optional)
-                        it.optional.value = 'true'
-                    else
-                        it.appendNode('optional', 'true');
-                }
-            }
-        }
+reobf {
+    jar {
+        extraLines "PK: net/blay09/javairc net/blay09/mods/bmc/twitchintegration/irc"
+        extraLines "PK: net/blay09/javatmi net/blay09/mods/bmc/twitchintegration/tmi"
     }
 }

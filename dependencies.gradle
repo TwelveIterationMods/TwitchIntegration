@@ -1,0 +1,5 @@
+dependencies {
+    deobfCompile "net.blay09.mods:BetterMinecraftChat_1.10:4.1.1"
+    shade "net.blay09.lib:JavaTMI:0.1.24"
+    shade "net.blay09.lib:JavaIRC:0.0.14"
+}

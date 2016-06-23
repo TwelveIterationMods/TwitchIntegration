@@ -1,0 +1,14 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+    
+    maven {
+        url "http://blay09.net:8081/artifactory/repo/"
+    }
+}
+
+configurations {
+    provided
+    shade
+    compile.extendsFrom shade
+}
