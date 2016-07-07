@@ -7,7 +7,9 @@ import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
 import net.blay09.mods.bmc.api.image.IChatRenderable;
 import net.blay09.mods.bmc.api.image.ITooltipProvider;
 import net.blay09.mods.bmc.balyware.CachedAPI;
+import net.blay09.mods.bmc.chat.emotes.twitch.TwitchAPI;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
@@ -43,7 +45,7 @@ public class TwitchBadge {
 	public static TwitchBadge getSubscriberBadge(String channel) {
 		TwitchBadge badge = twitchBadges.get(channel);
 		if(badge == null) {
-			JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/chat/" + channel + "/badges", "badges_" + channel);
+			JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/chat/" + channel + "/badges" + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "badges_" + channel);
 			JsonElement element = object.get("subscriber");
 			if(!element.isJsonNull()) {
 				try {
