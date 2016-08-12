@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.io.File;
 
-@Mod(modid = TwitchIntegration.MOD_ID, name = TwitchIntegration.NAME, clientSideOnly = true, dependencies = "required-after:betterminecraftchat",
+@Mod(modid = TwitchIntegration.MOD_ID, name = TwitchIntegration.NAME, acceptedMinecraftVersions = "[1.10]", clientSideOnly = true, dependencies = "required-after:betterminecraftchat",
 updateJSON = "http://balyware.com/new/forge_update?modid=" + TwitchIntegration.MOD_ID)
 public class TwitchIntegration implements IntegrationModule {
 
