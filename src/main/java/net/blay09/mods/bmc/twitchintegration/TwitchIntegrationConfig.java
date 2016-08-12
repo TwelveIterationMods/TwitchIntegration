@@ -31,6 +31,7 @@ public class TwitchIntegrationConfig {
 	public static String singleActionFormat = "%u %m";
 	public static String multiActionFormat = "[%c] %u %m";
 	public static String whisperActionFormat = "%u \u25b6 %r : %m";
+	public static int port = 6667;
 
 	public static void load(File configFile) {
 		TwitchIntegrationConfig.configFile = configFile;
@@ -62,6 +63,7 @@ public class TwitchIntegrationConfig {
 		whisperActionFormat = jsonStringOr(jsonFormat, "whisperEmote", whisperActionFormat);
 		useAnonymousLogin = jsonRoot.has("anonymousLogin") && jsonRoot.get("anonymousLogin").getAsBoolean();
 		showWhispers = jsonRoot.has("showWhispers") && jsonRoot.get("showWhispers").getAsBoolean();
+		port = jsonRoot.has("port") ? jsonRoot.get("port").getAsInt() : port;
 		JsonArray jsonChannels = jsonRoot.getAsJsonArray("channels");
 		for(int i = 0; i < jsonChannels.size(); i++) {
 			JsonObject jsonChannel = jsonChannels.get(i).getAsJsonObject();
@@ -85,6 +87,7 @@ public class TwitchIntegrationConfig {
 		jsonRoot.add("format", jsonFormat);
 		jsonRoot.addProperty("anonymousLogin", useAnonymousLogin);
 		jsonRoot.addProperty("showWhispers", showWhispers);
+		jsonRoot.addProperty("port", port);
 		JsonArray jsonChannels = new JsonArray();
 		for(TwitchChannel channel : twitchManager.getChannels()) {
 			JsonObject jsonChannel = new JsonObject();

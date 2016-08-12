@@ -65,6 +65,7 @@ public class TwitchManager {
 		if(tokenPair != null) {
 			String token = tokenPair.getToken().startsWith("oauth:") ? tokenPair.getToken() : "oauth:" + tokenPair.getToken();
 			IRCConfiguration.IRCConfigurationBuilder builder = TMIClient.defaultBuilder().debug(true).nick(tokenPair.getUsername()).password(token);
+			builder.port(TwitchIntegrationConfig.port);
 			for(TwitchChannel channel : channels.values()) {
 				if(channel.isActive()) {
 					builder.autoJoinChannel("#" + channel.getName().toLowerCase());
