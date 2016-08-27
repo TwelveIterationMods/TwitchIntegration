@@ -31,6 +31,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.common.ForgeHooks;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -465,7 +466,7 @@ public class TwitchChatHandler extends TMIAdapter {
 								chatImage.setIndex(chatImage.getIndex() + root.getFormattedText().length());
 							}
 						}
-						root.appendText(isAction ? BetterMinecraftChatAPI.TEXT_FORMATTING_RGB + message : message);
+						root.appendSibling(ForgeHooks.newChatWithLinks(isAction ? BetterMinecraftChatAPI.TEXT_FORMATTING_RGB + message : message));
 						break;
 				}
 			} else {
