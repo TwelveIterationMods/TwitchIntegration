@@ -42,21 +42,22 @@ public class TwitchBadge {
 	}
 
 	@Nullable
-	public static TwitchBadge getSubscriberBadge(String channel) {
-		TwitchBadge badge = twitchBadges.get(channel);
+	public static TwitchBadge getSubscriberBadge(TwitchChannel channel, int subMonths) {
+		TwitchBadge badge = twitchBadges.get(channel.getName() + "_" + subMonths);
 		if(badge == null) {
-			JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/chat/" + channel + "/badges" + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "badges_" + channel);
-			JsonElement element = object.get("subscriber");
-			if(!element.isJsonNull()) {
+			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "badges_" + channel.getName());
+			JsonObject badges = object.getAsJsonObject("badge_sets");
+			if(badges.has("subscriber")) {
+				JsonObject jsonImage = badges.getAsJsonObject("subscriber").getAsJsonObject("versions").getAsJsonObject(String.valueOf(subMonths));
 				try {
-					IChatRenderable chatRenderable = BetterMinecraftChatAPI.loadImage(new URI(element.getAsJsonObject().get("image").getAsString()), new File(Minecraft.getMinecraft().mcDataDir, "bmc/cache/badge_" + channel));
+					IChatRenderable chatRenderable = BetterMinecraftChatAPI.loadImage(new URI(jsonImage.get("image_url_1x").getAsString()), new File(Minecraft.getMinecraft().mcDataDir, "bmc/cache/badge_" + channel.getName() + "_" + subMonths));
 					chatRenderable.setScale(0.45f);
 					badge = new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY);
 				} catch (IOException | URISyntaxException e) {
 					e.printStackTrace();
 				}
 			}
-			twitchBadges.put(channel, badge);
+			twitchBadges.put(channel.getName() + "_" + subMonths, badge);
 		}
 		return badge;
 	}

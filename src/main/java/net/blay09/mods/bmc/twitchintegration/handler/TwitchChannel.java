@@ -1,7 +1,10 @@
 package net.blay09.mods.bmc.twitchintegration.handler;
 
+import com.google.gson.JsonObject;
 import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
 import net.blay09.mods.bmc.api.chat.IChatChannel;
+import net.blay09.mods.bmc.balyware.CachedAPI;
+import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
 
 import javax.annotation.Nullable;
 
@@ -28,10 +31,17 @@ public class TwitchChannel {
 	private boolean subscribersOnly;
 	private DeletedMessages deletedMessages = DeletedMessages.SHOW;
 	private boolean active;
+	private int id;
 
 	public TwitchChannel(String name) {
 		this.name = name;
 		targetChannelName = name;
+		JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/channels/" + name + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "info_" + name);
+		id = object.get("_id").getAsInt();
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	public String getName() {

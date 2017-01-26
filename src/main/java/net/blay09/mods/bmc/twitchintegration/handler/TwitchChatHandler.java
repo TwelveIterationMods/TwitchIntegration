@@ -180,14 +180,22 @@ public class TwitchChatHandler extends TMIAdapter {
 				if (user.hasBadges()) {
 					for (String badgeName : user.getBadges()) {
 						int slash = badgeName.indexOf('/');
+						int slashVal = 0;
 						if (slash != -1) {
+							slashVal = Integer.parseInt(badgeName.substring(slash + 1, badgeName.length()));
 							badgeName = badgeName.substring(0, slash);
 						}
 						TwitchBadge badge;
-						if (badgeName.equals("subscriber")) {
-							badge = TwitchBadge.getSubscriberBadge(channel.substring(1));
-						} else {
-							badge = TwitchBadge.getBadge(badgeName);
+						switch (badgeName) {
+							case "subscriber":
+								badge = TwitchBadge.getSubscriberBadge(twitchChannel, slashVal);
+								break;
+							case "bits":
+								badge = TwitchBadge.getBadge(badgeName + slashVal);
+								break;
+							default:
+								badge = TwitchBadge.getBadge(badgeName);
+								break;
 						}
 						if (badge != null) {
 							IChatImage image = BetterMinecraftChatAPI.createImage(badgeIndex, badge.getChatRenderable(), badge.getTooltipProvider());
