@@ -64,6 +64,13 @@ public class TwitchIntegration implements IntegrationModule {
 		TwitchBadge.loadInbuiltBadge("staff");
 		TwitchBadge.loadInbuiltBadge("admin");
 		TwitchBadge.loadInbuiltBadge("global_mod");
+		TwitchBadge.loadInbuiltBadge("premium");
+		TwitchBadge.loadInbuiltBadge("bits1");
+		TwitchBadge.loadInbuiltBadge("bits100");
+		TwitchBadge.loadInbuiltBadge("bits1000");
+		TwitchBadge.loadInbuiltBadge("bits5000");
+		TwitchBadge.loadInbuiltBadge("bits10000");
+		TwitchBadge.loadInbuiltBadge("bits100000");
 	}
 
 	@SubscribeEvent
