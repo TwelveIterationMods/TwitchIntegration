@@ -44,7 +44,7 @@ public class TwitchBadge {
 	@Nullable
 	public static TwitchBadge getSubscriberBadge(TwitchChannel channel, int subMonths) {
 		TwitchBadge badge = twitchBadges.get(channel.getName() + "_" + subMonths);
-		if(badge == null) {
+		if(badge == null && channel.getId() != -1) {
 			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "badges_" + channel.getName());
 			JsonObject badges = object.getAsJsonObject("badge_sets");
 			if(badges.has("subscriber")) {
@@ -56,8 +56,8 @@ public class TwitchBadge {
 				} catch (IOException | URISyntaxException e) {
 					e.printStackTrace();
 				}
+				twitchBadges.put(channel.getName() + "_" + subMonths, badge);
 			}
-			twitchBadges.put(channel.getName() + "_" + subMonths, badge);
 		}
 		return badge;
 	}
