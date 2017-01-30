@@ -59,6 +59,12 @@ public class TwitchManager {
 		}
 
 		for(TwitchChannel channel : channels.values()) {
+			IChatChannel twitchTab = BetterMinecraftChatAPI.getChatChannel(channel.getName(), false);
+			if(channel.getTargetTabName().equals(channel.getName())) {
+				twitchTab.setDisplayChannel(null);
+			} else {
+				twitchTab.setDisplayChannel(BetterMinecraftChatAPI.getChatChannel(channel.getTargetTabName(), false));
+			}
 			channel.setTargetTab(BetterMinecraftChatAPI.getChatChannel(channel.getTargetTabName(), false));
 		}
 
@@ -69,6 +75,7 @@ public class TwitchManager {
 			for(TwitchChannel channel : channels.values()) {
 				if(channel.isActive()) {
 					builder.autoJoinChannel("#" + channel.getName().toLowerCase());
+					activeChannels.add(channel);
 				}
 			}
 			twitchClient = new TMIClient(builder.build(), TwitchIntegration.getTwitchChatHandler());
