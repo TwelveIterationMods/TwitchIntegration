@@ -10,6 +10,7 @@ import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchEmote;
 import net.blay09.javatmi.TwitchUser;
+import net.blay09.javatmi.TwitchMessage;
 import net.blay09.mods.bmc.BetterMinecraftChat;
 import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
 import net.blay09.mods.bmc.api.chat.IChatChannel;
@@ -107,16 +108,11 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	@Override
-	public void onChatMessage(TMIClient client, String channel, TwitchUser user, String message) {
-		onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.multiMessageFormat : TwitchIntegrationConfig.singleMessageFormat, channel, user, message, false);
+	public void onChatMessage(TMIClient client, String channel, TwitchUser user, TwitchMessage message) {
+		onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.multiMessageFormat : TwitchIntegrationConfig.singleMessageFormat, channel, user, message);
 	}
 
-	@Override
-	public void onActionMessage(TMIClient client, String channel, TwitchUser user, String message) {
-		onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.multiActionFormat : TwitchIntegrationConfig.singleActionFormat, channel, user, message, true);
-	}
-
-	public void onTwitchChat(final TMIClient client, final String format, final String channel, final TwitchUser user, final String message, final boolean isAction) {
+	public void onTwitchChat(final TMIClient client, final String format, final String channel, final TwitchUser user, final TwitchMessage twitchMessage) {
 		Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 			@Override
 			public void run() {
@@ -125,11 +121,15 @@ public class TwitchChatHandler extends TMIAdapter {
 					return;
 				}
 
+				if (twitchChannel != null && twitchChannel.getId() == -1 && twitchMessage.getChannelId() != -1) {
+					twitchChannel.setId(twitchMessage.getChannelId());
+				}
+
 				boolean isSelf = user.getNick().equals(client.getIRCConnection().getNick());
 
 				// Apply Twitch Emotes
 				tmpEmotes.clear();
-				List<PositionedEmote> emoteList = (isSelf && !user.hasEmotes()) ? emoteScanner.scanForEmotes(message, null) : emoteScanner.scanForEmotes(message, noTwitchEmotes);
+				List<PositionedEmote> emoteList = (isSelf && !user.hasEmotes()) ? emoteScanner.scanForEmotes(twitchMessage.getMessage(), null) : emoteScanner.scanForEmotes(twitchMessage.getMessage(), noTwitchEmotes);
 				if (user.hasEmotes()) {
 					for (TwitchEmote twitchEmote : user.getEmotes()) {
 						IEmote emote = TwitchAPI.getEmoteById(twitchEmote.getId());
@@ -145,7 +145,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				StringBuilder sb = new StringBuilder();
 				for (PositionedEmote emoteData : emoteList) {
 					if (index < emoteData.getStart()) {
-						sb.append(message.substring(index, emoteData.getStart()));
+						sb.append(twitchMessage.getMessage().substring(index, emoteData.getStart()));
 					}
 					int imageIndex = sb.length() + 1;
 					for (int i = 0; i < emoteData.getEmote().getWidthInSpaces(); i++) {
@@ -154,8 +154,8 @@ public class TwitchChatHandler extends TMIAdapter {
 					tmpEmotes.add(new ChatImageEmote(imageIndex, emoteData.getEmote()));
 					index = emoteData.getEnd() + 1;
 				}
-				if (index < message.length()) {
-					sb.append(message.substring(index));
+				if (index < twitchMessage.getMessage().length()) {
+					sb.append(twitchMessage.getMessage().substring(index));
 				}
 				String message = sb.toString();
 
@@ -173,7 +173,10 @@ public class TwitchChatHandler extends TMIAdapter {
 						tmpBadgeNames.add("turbo");
 					}
 					if (user.isSubscriber()) {
-						tmpBadgeNames.add("subscriber");
+						tmpBadgeNames.add("subscriber/" + user.getSubscribedMonths());
+					}
+					if (user.getCheeredBits() > 0) {
+						tmpBadgeNames.add("bits/" + user.getCheeredBits());
 					}
 					user.setBadges(tmpBadgeNames.toArray(new String[tmpBadgeNames.size()]));
 				}
@@ -212,7 +215,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				if (targetChannel != null && targetChannel.isShowTimestamp()) {
 					newFormat = TextFormatting.GRAY + dateFormat.format(new Date()) + " " + TextFormatting.RESET + format;
 				}
-				ITextComponent textComponent = formatComponent(newFormat, channel, user, message, tmpBadges, tmpEmotes, null, isAction);
+				ITextComponent textComponent = formatComponent(newFormat, channel, user, message, tmpBadges, tmpEmotes, null, twitchMessage.isAction());
 				IChatMessage chatMessage = BetterMinecraftChatAPI.addChatLine(textComponent, targetChannel);
 				chatMessage.setManaged(true);
 				for (IChatImage chatImage : tmpBadges) {
@@ -227,7 +230,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				} else {
 					chatMessage.addRGBColor(128, 128, 128);
 				}
-				if (isAction) {
+				if (twitchMessage.isAction()) {
 					if (user.hasColor()) {
 						int nameColor = BetterMinecraftChat.colorFromHex(user.getColor());
 						chatMessage.addRGBColor(nameColor >> 16, nameColor >> 8 & 255, nameColor & 255);
@@ -248,33 +251,35 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	@Override
-	public void onSubscribe(TMIClient client, final String channel, final String username) {
+	public void onSubscribe(TMIClient client, final String channel, final String username, final boolean prime) {
 		Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 			@Override
 			public void run() {
 				TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 				if (twitchManager.isMultiMode()) {
-					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.subscribeMulti", channel, username), twitchChannel != null ? twitchChannel.getTargetTab() : null);
+					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + (prime ? ":chat.subscribePrimeMulti": ":chat.subscribeMulti"), channel, username), twitchChannel != null ? twitchChannel.getTargetTab() : null);
 				} else {
-					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.subscribe", username), twitchChannel != null ? twitchChannel.getTargetTab() : null);
+					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + (prime ? ":chat.subscribePrime": ":chat.subscribe"), username), twitchChannel != null ? twitchChannel.getTargetTab() : null);
 				}
 			}
 		});
 	}
 
 	@Override
-	public void onResubscribe(TMIClient client, final String channel, final String username, final int months) {
+	public void onResubscribe(TMIClient client, final String channel, final TwitchUser user, final int months, String message) {
 		Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 			@Override
 			public void run() {
 				TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 				if (twitchManager.isMultiMode()) {
-					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribeMulti", channel, username, months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
+					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribeMulti", channel, user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
 				} else {
-					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribeMulti", username, months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
+					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribe", user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
 				}
 			}
 		});
+		if (message != null)
+			onTwitchChat(client, twitchManager.isMultiMode()? TwitchIntegrationConfig.multiMessageFormat : TwitchIntegrationConfig.singleMessageFormat, channel, user, new TwitchMessage(message, -1, false, 0));
 	}
 
 	@Override

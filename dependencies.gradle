@@ -1,5 +1,5 @@
 dependencies {
-    deobfCompile "net.blay09.mods:BetterMinecraftChat_1.10.2:4.1.4"
-    shade "net.blay09.lib:JavaTMI:0.1.29"
-    shade "net.blay09.lib:JavaIRC:0.0.20"
+    deobfCompile "net.blay09.mods:BetterMinecraftChat_1.10.2:4.1.8"
+    shade "net.blay09.lib:JavaTMI:0.1.33"
+    shade "net.blay09.lib:JavaIRC:0.0.23"
 }

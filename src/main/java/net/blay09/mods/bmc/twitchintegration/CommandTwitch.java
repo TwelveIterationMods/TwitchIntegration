@@ -2,6 +2,7 @@ package net.blay09.mods.bmc.twitchintegration;
 
 import com.google.common.collect.Lists;
 import net.blay09.javatmi.TMIClient;
+import net.blay09.javatmi.TwitchMessage;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
 import net.minecraft.command.CommandBase;
@@ -45,9 +46,9 @@ public class CommandTwitch extends CommandBase {
 				twitchClient.send(args[0], message);
 				if(message.startsWith("/me ")) {
 					message = message.substring(4);
-					twitchChatHandler.onActionMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient), message);
+					twitchChatHandler.onChatMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient), new TwitchMessage(message, -1, true, 0));
 				} else {
-					twitchChatHandler.onChatMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient), message);
+					twitchChatHandler.onChatMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient), new TwitchMessage(message, -1, false, 0));
 				}
 			} else {
 				twitchClient.getTwitchCommands().whisper(args[0], message);

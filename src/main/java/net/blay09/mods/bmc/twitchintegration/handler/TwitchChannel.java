@@ -31,17 +31,19 @@ public class TwitchChannel {
 	private boolean subscribersOnly;
 	private DeletedMessages deletedMessages = DeletedMessages.SHOW;
 	private boolean active;
-	private int id;
+	private int id = -1;
 
 	public TwitchChannel(String name) {
 		this.name = name;
 		targetChannelName = name;
-		JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/channels/" + name + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "info_" + name);
-		id = object.get("_id").getAsInt();
 	}
 
 	public int getId() {
 		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public String getName() {
