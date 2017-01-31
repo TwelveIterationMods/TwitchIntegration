@@ -5,6 +5,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.gson.JsonObject;
 import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
@@ -19,12 +20,14 @@ import net.blay09.mods.bmc.api.emote.IEmote;
 import net.blay09.mods.bmc.api.emote.IEmoteScanner;
 import net.blay09.mods.bmc.api.emote.PositionedEmote;
 import net.blay09.mods.bmc.api.image.IChatImage;
+import net.blay09.mods.bmc.balyware.CachedAPI;
 import net.blay09.mods.bmc.chat.emotes.twitch.TwitchAPI;
 import net.blay09.mods.bmc.chat.emotes.twitch.TwitchGlobalEmotes;
 import net.blay09.mods.bmc.chat.emotes.twitch.TwitchSubscriberEmotes;
 import net.blay09.mods.bmc.image.ChatImageEmote;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
+import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
@@ -96,7 +99,7 @@ public class TwitchChatHandler extends TMIAdapter {
 	private final IEmoteScanner emoteScanner = BetterMinecraftChatAPI.createEmoteScanner();
 	private final Multimap<ChannelUser, IChatMessage> messages = ArrayListMultimap.create();
 	private final Map<String, TwitchUser> users = Maps.newHashMap();
-	private TwitchUser thisUser;
+	private Map<String, TwitchUser> thisUsers = Maps.newHashMap();
 
 	private final List<IChatImage> tmpBadges = Lists.newArrayList();
 	private final List<IChatImage> tmpEmotes = Lists.newArrayList();
@@ -104,7 +107,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
 	@Override
 	public void onUserState(TMIClient client, String channel, TwitchUser user) {
-		thisUser = user;
+		thisUsers.put(channel, user);
 	}
 
 	@Override
@@ -126,6 +129,12 @@ public class TwitchChatHandler extends TMIAdapter {
 				}
 
 				boolean isSelf = user.getNick().equals(client.getIRCConnection().getNick());
+
+				if (twitchChannel != null && twitchChannel.getId() == -1 && isSelf) {
+					JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/channels/" + twitchChannel.getName() + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "info_" + twitchChannel.getName());
+					if (object != null && object.has("_id"))
+						twitchChannel.setId(object.get("_id").getAsInt());
+				}
 
 				// Apply Twitch Emotes
 				tmpEmotes.clear();
@@ -284,7 +293,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
 	@Override
 	public void onWhisperMessage(TMIClient client, TwitchUser user, String message) {
-		onWhisperMessage(client, user, getThisUser(client), message);
+		onWhisperMessage(client, user, getThisUser(client, null), message);
 	}
 
 	public void onWhisperMessage(final TMIClient client, final TwitchUser user, final TwitchUser receiver, final String message) {
@@ -496,11 +505,14 @@ public class TwitchChatHandler extends TMIAdapter {
 		return root;
 	}
 
-	public TwitchUser getThisUser(TMIClient client) {
-		if(thisUser == null) {
-			thisUser = new TwitchUser(new IRCUser(client.getIRCConnection().getNick(), null, null));
+	public TwitchUser getThisUser(TMIClient client, String channel) {
+		if (channel == null)
+			channel = !thisUsers.isEmpty() ? thisUsers.keySet().iterator().next(): "";
+
+		if(!thisUsers.containsKey(channel)) {
+			thisUsers.put(channel, new TwitchUser(new IRCUser(client.getIRCConnection().getNick(), null, null)));
 		}
-		return thisUser;
+		return thisUsers.get(channel);
 	}
 
 	public TwitchUser getUser(String username) {
