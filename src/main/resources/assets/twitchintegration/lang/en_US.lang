@@ -37,5 +37,7 @@ twitchintegration:gui.awaitingResponse.followInstructions=Please switch to your 
 
 twitchintegration:chat.subscribe=%s just subscribed!
 twitchintegration:chat.subscribeMulti=[%s] %s just subscribed!
+twitchintegration:chat.subscribePrime=%s just subscribed with Twitch Prime!
+twitchintegration:chat.subscribePrimeMulti=[%s] %s just subscribed with Twitch Prime!
 twitchintegration:chat.resubscribe=%s has subscribed for %d months in a row!
 twitchintegration:chat.resubscribeMulti=[%s] %s has subscribed for %d months in a row!

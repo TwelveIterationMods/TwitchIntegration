@@ -1,8 +1,8 @@
 [
 {
-  "modid": "betterminecraftchat",
-  "name": "BetterMinecraftChat",
-  "description": "Emoticons, Image Preview, Tabs and Filters. Client-side only.",
+  "modid": "twitchintegration",
+  "name": "Twitch Integration",
+  "description": "Brings your Twitch chat into Minecraft.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",

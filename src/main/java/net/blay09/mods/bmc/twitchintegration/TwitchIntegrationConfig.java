@@ -69,6 +69,7 @@ public class TwitchIntegrationConfig {
 			JsonObject jsonChannel = jsonChannels.get(i).getAsJsonObject();
 			TwitchChannel channel = new TwitchChannel(jsonChannel.get("name").getAsString());
 			channel.setSubscribersOnly(jsonChannel.has("subscribersOnly") && jsonChannel.get("subscribersOnly").getAsBoolean());
+			channel.setId(jsonChannel.has("channelId")? jsonChannel.get("channelId").getAsInt(): -1);
 			channel.setDeletedMessages(TwitchChannel.DeletedMessages.fromName(jsonChannel.get("deletedMessages").getAsString()));
 			channel.setTargetTabName(jsonStringOr(jsonChannel, "targetTab", channel.getName()));
 			channel.setActive(jsonChannel.has("active") && jsonChannel.get("active").getAsBoolean());
@@ -93,6 +94,7 @@ public class TwitchIntegrationConfig {
 			JsonObject jsonChannel = new JsonObject();
 			jsonChannel.addProperty("name", channel.getName());
 			jsonChannel.addProperty("subscribersOnly", channel.isSubscribersOnly());
+			jsonChannel.addProperty("channelId", channel.getId());
 			jsonChannel.addProperty("deletedMessages", channel.getDeletedMessages().name().toLowerCase());
 			jsonChannel.addProperty("targetTab", channel.getTargetTabName());
 			jsonChannel.addProperty("active", channel.isActive());
