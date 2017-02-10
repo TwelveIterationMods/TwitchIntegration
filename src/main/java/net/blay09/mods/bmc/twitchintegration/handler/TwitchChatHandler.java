@@ -9,6 +9,7 @@ import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchEmote;
+import net.blay09.javatmi.TwitchMessage;
 import net.blay09.javatmi.TwitchUser;
 import net.blay09.mods.bmc.BetterMinecraftChat;
 import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
@@ -107,13 +108,13 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	@Override
-	public void onChatMessage(TMIClient client, String channel, TwitchUser user, String message) {
-		onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.multiMessageFormat : TwitchIntegrationConfig.singleMessageFormat, channel, user, message, false);
-	}
+	public void onChatMessage(TMIClient client, String channel, TwitchUser user, TwitchMessage message) {
+		if(message.isAction()) {
+			onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.multiActionFormat : TwitchIntegrationConfig.singleActionFormat, channel, user, message.getMessage(), true);
+		} else {
+			onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.multiMessageFormat : TwitchIntegrationConfig.singleMessageFormat, channel, user, message.getMessage(), false);
 
-	@Override
-	public void onActionMessage(TMIClient client, String channel, TwitchUser user, String message) {
-		onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.multiActionFormat : TwitchIntegrationConfig.singleActionFormat, channel, user, message, true);
+		}
 	}
 
 	public void onTwitchChat(final TMIClient client, final String format, final String channel, final TwitchUser user, final String message, final boolean isAction) {
@@ -255,15 +256,15 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	@Override
-	public void onResubscribe(TMIClient client, final String channel, final String username, final int months) {
+	public void onResubscribe(TMIClient client, final String channel, final TwitchUser user, final int months, String message) {
 		Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 			@Override
 			public void run() {
 				TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 				if (twitchManager.isMultiMode()) {
-					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribeMulti", channel, username, months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
+					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribeMulti", channel, user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
 				} else {
-					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribeMulti", username, months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
+					BetterMinecraftChatAPI.addChatLine(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribe", user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getTargetTab() : null);
 				}
 			}
 		});
