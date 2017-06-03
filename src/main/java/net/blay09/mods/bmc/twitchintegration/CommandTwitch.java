@@ -19,12 +19,12 @@ import java.util.List;
 public class CommandTwitch extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "twitch";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "/twitch <channel|user> <message>";
 	}
 
@@ -36,7 +36,7 @@ public class CommandTwitch extends CommandBase {
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if(args.length < 2) {
-			throw new WrongUsageException(getCommandUsage(sender));
+			throw new WrongUsageException(getUsage(sender));
 		}
 		String message = StringUtils.join(args, ' ', 1, args.length);
 		TMIClient twitchClient = TwitchIntegration.getTwitchManager().getClient();
@@ -58,7 +58,7 @@ public class CommandTwitch extends CommandBase {
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
 		List<String> completions = Lists.newArrayList();
 		for(TwitchChannel channel : TwitchIntegration.getTwitchManager().getChannels()) {
 			if(channel.isActive()) {

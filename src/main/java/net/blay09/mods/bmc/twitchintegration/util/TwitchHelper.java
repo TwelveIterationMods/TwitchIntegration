@@ -3,11 +3,10 @@ package net.blay09.mods.bmc.twitchintegration.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
+import net.blay09.mods.bmc.ChatTweaks;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.gui.GuiTwitchWaitingForUsername;
+import net.blay09.mods.bmc.twitchintegration.gui.old.GuiTwitchWaitingForUsername;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,17 +24,14 @@ public class TwitchHelper {
 
 	private static TokenReceiver tokenReceiver;
 
-	public static void listenForToken(final GuiScreen parentScreen, final Runnable callback) {
+	public static void listenForToken(final Runnable callback) {
 		if(tokenReceiver == null) {
 			tokenReceiver = new TokenReceiver() {
 				@Override
 				public void onTokenReceived(final String token) {
-					Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-						@Override
-						public void run() {
-							Minecraft.getMinecraft().displayGuiScreen(new GuiTwitchWaitingForUsername(parentScreen));
-							requestUsername(token, callback);
-						}
+					Minecraft.getMinecraft().addScheduledTask(() -> {
+						Minecraft.getMinecraft().displayGuiScreen(new GuiTwitchWaitingForUsername());
+						requestUsername(token, callback);
 					});
 				}
 			};
@@ -51,25 +47,22 @@ public class TwitchHelper {
 	}
 
 	public static void requestUsername(final String token, final Runnable callback) {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					URL apiURL = new URL(API_BASE_URL.replace("{{CLIENT_ID}}", OAUTH_CLIENT_ID).replace("{{ACCESS_TOKEN}}", token));
-					try (InputStreamReader reader = new InputStreamReader(apiURL.openStream())) {
-						try {
-							Gson gson = new Gson();
-							JsonObject root = gson.fromJson(reader, JsonObject.class);
-							String username = root.getAsJsonObject("token").get("user_name").getAsString();
-							BetterMinecraftChatAPI.getAuthManager().storeToken(TwitchIntegration.MOD_ID, username, token);
-							Minecraft.getMinecraft().addScheduledTask(callback);
-						} catch (JsonParseException e) {
-							e.printStackTrace();
-						}
+		new Thread(() -> {
+			try {
+				URL apiURL = new URL(API_BASE_URL.replace("{{CLIENT_ID}}", OAUTH_CLIENT_ID).replace("{{ACCESS_TOKEN}}", token));
+				try (InputStreamReader reader = new InputStreamReader(apiURL.openStream())) {
+					try {
+						Gson gson = new Gson();
+						JsonObject root = gson.fromJson(reader, JsonObject.class);
+						String username = root.getAsJsonObject("token").get("user_name").getAsString();
+						ChatTweaks.getAuthManager().storeToken(TwitchIntegration.MOD_ID, username, token);
+						Minecraft.getMinecraft().addScheduledTask(callback);
+					} catch (JsonParseException e) {
+						e.printStackTrace();
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}).start();
 	}

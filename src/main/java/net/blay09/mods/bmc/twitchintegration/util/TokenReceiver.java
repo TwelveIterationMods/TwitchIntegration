@@ -1,5 +1,5 @@
 /*
-Code adapted from ChattyWebserver, though partly rewritten to be less awful.
+Code adapted from ChattyWebserver, partially rewritten.
 
 Original License:
 

@@ -1,20 +1,15 @@
 package net.blay09.mods.bmc.twitchintegration;
 
-import net.blay09.mods.bmc.BetterMinecraftChat;
-import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
-import net.blay09.mods.bmc.api.IntegrationModule;
-import net.blay09.mods.bmc.api.TokenPair;
-import net.blay09.mods.bmc.twitchintegration.gui.GuiTwitchAuthentication;
-import net.blay09.mods.bmc.twitchintegration.gui.GuiTwitchChannels;
+import net.blay09.mods.bmc.ChatTweaks;
+import net.blay09.mods.bmc.auth.TokenPair;
+import net.blay09.mods.bmc.twitchintegration.gui.old.GuiTwitchAuthentication;
+import net.blay09.mods.bmc.twitchintegration.gui.old.GuiTwitchChannels;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchBadge;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,17 +20,14 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.io.File;
 
-@Mod(modid = TwitchIntegration.MOD_ID, name = TwitchIntegration.NAME, acceptedMinecraftVersions = "[1.10]", clientSideOnly = true, dependencies = "required-after:betterminecraftchat",
-updateJSON = "http://balyware.com/new/forge_update?modid=" + TwitchIntegration.MOD_ID)
-public class TwitchIntegration implements IntegrationModule {
+@Mod(modid = TwitchIntegration.MOD_ID, name = "Twitch Integration", acceptedMinecraftVersions = "[1.11.2]", clientSideOnly = true, dependencies = "required-after:chattweaks",
+guiFactory = "net.blay09.mods.bmc.twitchintegration.gui.GuiFactory")
+public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
-	public static final String NAME = "Twitch Integration";
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;
-
-	private TextureAtlasSprite icon;
 
 	private TwitchManager twitchManager;
 	private TwitchChatHandler twitchChatHandler;
@@ -49,15 +41,12 @@ public class TwitchIntegration implements IntegrationModule {
 
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
-		twitchManager = new TwitchManager();
+		twitchManager = new TwitchManager(new File(Minecraft.getMinecraft().mcDataDir, "config/ChatTweaks/twitch_channels.json"));
 		twitchChatHandler = new TwitchChatHandler(twitchManager);
-		TwitchIntegrationConfig.load(new File(Minecraft.getMinecraft().mcDataDir, "config/BetterMinecraftChat/twitchintegration.json"));
 	}
 
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
-		BetterMinecraftChatAPI.registerIntegration(this);
-
 		TwitchBadge.loadInbuiltBadge("broadcaster");
 		TwitchBadge.loadInbuiltBadge("moderator");
 		TwitchBadge.loadInbuiltBadge("turbo");
@@ -71,11 +60,8 @@ public class TwitchIntegration implements IntegrationModule {
 		TwitchBadge.loadInbuiltBadge("bits5000");
 		TwitchBadge.loadInbuiltBadge("bits10000");
 		TwitchBadge.loadInbuiltBadge("bits100000");
-	}
 
-	@SubscribeEvent
-	public void onTextureStitch(TextureStitchEvent.Pre event) {
-		icon = event.getMap().registerSprite(new ResourceLocation(MOD_ID, "icon"));
+		// TODO needs changes when we update to new channel badges
 	}
 
 	@SubscribeEvent
@@ -85,24 +71,8 @@ public class TwitchIntegration implements IntegrationModule {
 		}
 	}
 
-	@Override
-	public String getModId() {
-		return MOD_ID;
-	}
-
-	@Override
-	public String getName() {
-		return NAME;
-	}
-
-	@Override
-	public TextureAtlasSprite getIcon() {
-		return icon;
-	}
-
-	@Override
-	public GuiScreen getConfigScreen(GuiScreen parentScreen) {
-		TokenPair tokenPair = BetterMinecraftChatAPI.getAuthManager().getToken(BetterMinecraftChat.TWITCH_INTEGRATION);
+	public GuiScreen getConfigScreen(GuiScreen parentScreen) { // TODO unused
+		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
 		if (tokenPair != null) {
 			return new GuiTwitchChannels();
 		} else {

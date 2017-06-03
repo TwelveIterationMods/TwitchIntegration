@@ -1,4 +1,4 @@
-package net.blay09.mods.bmc.twitchintegration.gui;
+package net.blay09.mods.bmc.twitchintegration.gui.old;
 
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
 import net.minecraft.client.Minecraft;

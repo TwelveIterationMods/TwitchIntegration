@@ -1,15 +1,13 @@
 package net.blay09.mods.bmc.twitchintegration.handler;
 
 import com.google.common.collect.Maps;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.blay09.mods.bmc.api.BetterMinecraftChatAPI;
-import net.blay09.mods.bmc.api.image.IChatRenderable;
-import net.blay09.mods.bmc.api.image.ITooltipProvider;
+import net.blay09.mods.bmc.ChatTweaks;
+import net.blay09.mods.bmc.ChatTweaksAPI;
 import net.blay09.mods.bmc.balyware.CachedAPI;
-import net.blay09.mods.bmc.chat.emotes.twitch.TwitchAPI;
+import net.blay09.mods.bmc.image.ITooltipProvider;
+import net.blay09.mods.bmc.image.renderable.IChatRenderable;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
@@ -45,12 +43,12 @@ public class TwitchBadge {
 	public static TwitchBadge getSubscriberBadge(TwitchChannel channel, int subMonths) {
 		TwitchBadge badge = twitchBadges.get(channel.getName() + "_" + subMonths);
 		if(badge == null && channel.getId() != -1) {
-			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "badges_" + channel.getName());
+			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "badges_" + channel.getName(), null); // TODO use https://dev.twitch.tv/docs/v5/reference/chat/#get-chat-badges-by-channel
 			JsonObject badges = object.getAsJsonObject("badge_sets");
 			if(badges.has("subscriber")) {
 				JsonObject jsonImage = badges.getAsJsonObject("subscriber").getAsJsonObject("versions").getAsJsonObject(String.valueOf(subMonths));
 				try {
-					IChatRenderable chatRenderable = BetterMinecraftChatAPI.loadImage(new URI(jsonImage.get("image_url_1x").getAsString()), new File(Minecraft.getMinecraft().mcDataDir, "bmc/cache/badge_" + channel.getName() + "_" + subMonths));
+					IChatRenderable chatRenderable = ChatTweaksAPI.loadImage(new URI(jsonImage.get("image_url_1x").getAsString()), new File(Minecraft.getMinecraft().mcDataDir, "bmc/cache/badge_" + channel.getName() + "_" + subMonths));
 					chatRenderable.setScale(0.45f);
 					badge = new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY);
 				} catch (IOException | URISyntaxException e) {
@@ -65,7 +63,7 @@ public class TwitchBadge {
 	public static void loadInbuiltBadge(String name) {
 		try {
 			IResource resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_" + name + ".png"));
-			IChatRenderable chatRenderable = BetterMinecraftChatAPI.loadImage(resource.getInputStream(), null);
+			IChatRenderable chatRenderable = ChatTweaksAPI.loadImage(resource.getInputStream(), null);
 			chatRenderable.setScale(0.45f);
 			twitchBadges.put(name, new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY));
 		} catch (IOException e) {
