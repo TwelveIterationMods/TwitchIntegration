@@ -2,11 +2,10 @@ package net.blay09.mods.bmc.twitchintegration.handler;
 
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
-import net.blay09.mods.bmc.ChatTweaks;
-import net.blay09.mods.bmc.ChatTweaksAPI;
 import net.blay09.mods.bmc.balyware.CachedAPI;
 import net.blay09.mods.bmc.image.ITooltipProvider;
 import net.blay09.mods.bmc.image.renderable.IChatRenderable;
+import net.blay09.mods.bmc.image.renderable.ImageLoader;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
@@ -48,9 +47,11 @@ public class TwitchBadge {
 			if(badges.has("subscriber")) {
 				JsonObject jsonImage = badges.getAsJsonObject("subscriber").getAsJsonObject("versions").getAsJsonObject(String.valueOf(subMonths));
 				try {
-					IChatRenderable chatRenderable = ChatTweaksAPI.loadImage(new URI(jsonImage.get("image_url_1x").getAsString()), new File(Minecraft.getMinecraft().mcDataDir, "bmc/cache/badge_" + channel.getName() + "_" + subMonths));
-					chatRenderable.setScale(0.45f);
-					badge = new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY);
+					IChatRenderable chatRenderable = ImageLoader.loadImage(new URI(jsonImage.get("image_url_1x").getAsString()), new File(Minecraft.getMinecraft().mcDataDir, "bmc/cache/badge_" + channel.getName() + "_" + subMonths));
+					if(chatRenderable != null) {
+						chatRenderable.setScale(0.45f);
+						badge = new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY);
+					}
 				} catch (IOException | URISyntaxException e) {
 					e.printStackTrace();
 				}
@@ -63,9 +64,11 @@ public class TwitchBadge {
 	public static void loadInbuiltBadge(String name) {
 		try {
 			IResource resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_" + name + ".png"));
-			IChatRenderable chatRenderable = ChatTweaksAPI.loadImage(resource.getInputStream(), null);
-			chatRenderable.setScale(0.45f);
-			twitchBadges.put(name, new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY));
+			IChatRenderable chatRenderable = ImageLoader.loadImage(resource.getInputStream(), null);
+			if(chatRenderable != null) {
+				chatRenderable.setScale(0.45f);
+				twitchBadges.put(name, new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY));
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

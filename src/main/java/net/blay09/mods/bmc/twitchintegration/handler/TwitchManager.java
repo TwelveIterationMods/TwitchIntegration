@@ -129,7 +129,7 @@ public class TwitchManager {
 	}
 
 	public void removeTwitchChannel(TwitchChannel channel) {
-		ChatManager.removeChannel(channel.getChatChannel());
+		ChatManager.removeChatChannel(channel.getChatChannel().getName());
 		channels.remove(channel.getName().toLowerCase());
 		if(activeChannels.remove(channel)) {
 			if(twitchClient != null) {

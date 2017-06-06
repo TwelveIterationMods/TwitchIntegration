@@ -1,14 +1,9 @@
 package net.blay09.mods.bmc.twitchintegration;
 
-import net.blay09.mods.bmc.ChatTweaks;
-import net.blay09.mods.bmc.auth.TokenPair;
-import net.blay09.mods.bmc.twitchintegration.gui.old.GuiTwitchAuthentication;
-import net.blay09.mods.bmc.twitchintegration.gui.old.GuiTwitchChannels;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchBadge;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -71,14 +66,14 @@ public class TwitchIntegration {
 		}
 	}
 
-	public GuiScreen getConfigScreen(GuiScreen parentScreen) { // TODO unused
-		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
-		if (tokenPair != null) {
-			return new GuiTwitchChannels();
-		} else {
-			return new GuiTwitchAuthentication(parentScreen);
-		}
-	}
+//	public GuiScreen getConfigScreen(GuiScreen parentScreen) { // TODO unused
+//		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
+//		if (tokenPair != null) {
+//			return new GuiTwitchChannels();
+//		} else {
+//			return new GuiTwitchAuthentication(parentScreen);
+//		}
+//	}
 
 	public static TwitchChatHandler getTwitchChatHandler() {
 		return instance.twitchChatHandler;
