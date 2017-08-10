@@ -11,26 +11,26 @@ import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchEmote;
 import net.blay09.javatmi.TwitchUser;
 import net.blay09.javatmi.TwitchMessage;
-import net.blay09.mods.bmc.ChatManager;
-import net.blay09.mods.bmc.ChatTweaks;
-import net.blay09.mods.bmc.ChatViewManager;
-import net.blay09.mods.bmc.balyware.CachedAPI;
-import net.blay09.mods.bmc.chat.ChatChannel;
-import net.blay09.mods.bmc.chat.ChatMessage;
-import net.blay09.mods.bmc.chat.ChatView;
-import net.blay09.mods.bmc.chat.emotes.EmoteScanner;
-import net.blay09.mods.bmc.chat.emotes.IEmote;
-import net.blay09.mods.bmc.chat.emotes.IEmoteScanner;
-import net.blay09.mods.bmc.chat.emotes.PositionedEmote;
-import net.blay09.mods.bmc.chat.emotes.twitch.TwitchAPI;
-import net.blay09.mods.bmc.chat.emotes.twitch.TwitchGlobalEmotes;
-import net.blay09.mods.bmc.chat.emotes.twitch.TwitchSubscriberEmotes;
-import net.blay09.mods.bmc.image.ChatImage;
-import net.blay09.mods.bmc.image.ChatImageDefault;
-import net.blay09.mods.bmc.image.ChatImageEmote;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
+import net.blay09.mods.chattweaks.ChatManager;
+import net.blay09.mods.chattweaks.ChatTweaks;
+import net.blay09.mods.chattweaks.ChatViewManager;
+import net.blay09.mods.chattweaks.balyware.CachedAPI;
+import net.blay09.mods.chattweaks.chat.ChatChannel;
+import net.blay09.mods.chattweaks.chat.ChatMessage;
+import net.blay09.mods.chattweaks.chat.ChatView;
+import net.blay09.mods.chattweaks.chat.emotes.EmoteScanner;
+import net.blay09.mods.chattweaks.chat.emotes.IEmote;
+import net.blay09.mods.chattweaks.chat.emotes.IEmoteScanner;
+import net.blay09.mods.chattweaks.chat.emotes.PositionedEmote;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchAPI;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchGlobalEmotes;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchSubscriberEmotes;
+import net.blay09.mods.chattweaks.image.ChatImage;
+import net.blay09.mods.chattweaks.image.ChatImageDefault;
+import net.blay09.mods.chattweaks.image.ChatImageEmote;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -109,20 +109,25 @@ public class TwitchChatHandler extends TMIAdapter {
 	public void onTwitchChat(final TMIClient client, final String format, final String channel, final TwitchUser user, final TwitchMessage twitchMessage) {
 		Minecraft.getMinecraft().addScheduledTask(() -> {
 			TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
+
+			// If subscriber-only chat is enabled client-side, ignore messages from non-subscribers
 			if (twitchChannel != null && twitchChannel.isSubscribersOnly() && !user.isSubscriber() && !user.isMod()) {
 				return;
 			}
 
+			// Fetch the channel id from the message if it's not known yet
 			if (twitchChannel != null && twitchChannel.getId() == -1 && twitchMessage.getChannelId() != -1) {
 				twitchChannel.setId(twitchMessage.getChannelId());
 			}
 
 			boolean isSelf = user.getNick().equals(client.getIRCConnection().getNick());
 
+			// If the channel id is not known yet (because this is the first message sent and it's from this client), poll the API instead
 			if (twitchChannel != null && twitchChannel.getId() == -1 && isSelf) {
-				JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/channels/" + twitchChannel.getName() + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "info_" + twitchChannel.getName(), "application/vnd.twitchtv.v5+json");
-				if (object != null && object.has("_id"))
+				JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/channels/" + twitchChannel.getName() + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "twitch_" + twitchChannel.getName(), "application/vnd.twitchtv.v5+json");
+				if (object != null && object.has("_id")) {
 					twitchChannel.setId(object.get("_id").getAsInt());
+				}
 			}
 
 			// Apply Twitch Emotes
@@ -146,6 +151,7 @@ public class TwitchChatHandler extends TMIAdapter {
 					sb.append(twitchMessage.getMessage().substring(index, emoteData.getStart()));
 				}
 				int imageIndex = sb.length() + 1;
+				sb.append("§*");
 				for (int i = 0; i < emoteData.getEmote().getWidthInSpaces(); i++) {
 					sb.append(' ');
 				}
@@ -209,13 +215,10 @@ public class TwitchChatHandler extends TMIAdapter {
 			ChatChannel targetChannel = twitchChannel != null ? twitchChannel.getChatChannel() : null;
 
 			// Format Message
-//				if (targetChannel != null && targetChannel.isShowTimestamp()) {
-//					newFormat = TextFormatting.GRAY + dateFormat.format(new Date()) + " " + TextFormatting.RESET + format;
-//				}
 			ITextComponent textComponent = formatComponent(format, channel, user, message, tmpBadges, tmpEmotes, null, twitchMessage.isAction()); // TODO ensure chatters can't §fuckshitup
-			ChatMessage chatMessage = ChatTweaks.addChatMessage(textComponent, targetChannel);
+			ChatMessage chatMessage = ChatTweaks.createChatMessage(textComponent);
 			chatMessage.setManaged(true);
-			chatMessage.withRGB(twitchMessage.isAction() ? 2 : 0);
+			chatMessage.withRGB(twitchMessage.isAction() ? 2 : 1);
 			for (ChatImage chatImage : tmpBadges) {
 				chatMessage.addImage(chatImage);
 			}
@@ -239,6 +242,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
 			messages.put(new ChannelUser(channel, user.getNick().toLowerCase()), chatMessage);
 			users.put(user.getNick().toLowerCase(), user);
+			ChatTweaks.addChatMessage(chatMessage, targetChannel);
 		});
 	}
 
@@ -299,6 +303,7 @@ public class TwitchChatHandler extends TMIAdapter {
 						sb.append(message.substring(index, emoteData.getStart()));
 					}
 					int imageIndex = sb.length() + 1;
+					sb.append("§*");
 					for (int i = 0; i < emoteData.getEmote().getWidthInSpaces(); i++) {
 						sb.append(' ');
 					}
@@ -321,7 +326,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				}
 				format = TextFormatting.GRAY + dateFormat.format(new Date()) + " " + TextFormatting.RESET + format;
 				ITextComponent textComponent = formatComponent(format, null, user, message1, null, tmpEmotes, receiver, isAction);
-				ChatMessage chatMessage = ChatTweaks.addChatMessage(textComponent, whisperChannel);
+				ChatMessage chatMessage = ChatTweaks.createChatMessage(textComponent);
 				chatMessage.setManaged(true);
 				chatMessage.withRGB(isAction ? 3 : 2);
 				for (ChatImage chatImage : tmpEmotes) {
@@ -354,6 +359,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				whisperView.setTemporary(true);
 
 				users.put(user.getNick().toLowerCase(), user);
+				ChatTweaks.addChatMessage(chatMessage, whisperChannel);
 			}
 		});
 	}
@@ -427,14 +433,17 @@ public class TwitchChatHandler extends TMIAdapter {
 						root.appendText(channel != null ? channel : "%c");
 						break;
 					case 'u':
-						int badgeOffset = 0;
+						StringBuilder sb = new StringBuilder();
 						if(nameBadges != null) {
 							for (ChatImage chatImage : nameBadges) {
 								chatImage.setIndex(chatImage.getIndex() + root.getFormattedText().length());
-								badgeOffset += chatImage.getSpaces();
+								sb.append("§*");
+								for(int i = 0; i < chatImage.getSpaces(); i++) {
+									sb.append(' ');
+								}
 							}
 						}
-						ITextComponent userComponent = new TextComponentString(StringUtils.repeat(' ', badgeOffset) + ChatTweaks.TEXT_FORMATTING_RGB + user.getDisplayName());
+						ITextComponent userComponent = new TextComponentString(sb.toString() + ChatTweaks.TEXT_FORMATTING_RGB + user.getDisplayName());
 						root.appendSibling(userComponent);
 						break;
 					case 'r':

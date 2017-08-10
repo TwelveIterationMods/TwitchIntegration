@@ -1,11 +1,11 @@
-package net.blay09.mods.bmc.twitchintegration.gui.old;
+package net.blay09.mods.bmc.twitchintegration.gui;
 
-import net.blay09.mods.bmc.ChatTweaks;
-import net.blay09.mods.bmc.auth.TokenPair;
-import net.blay09.mods.bmc.balyware.gui.GuiPasswordField;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.chattweaks.ChatTweaks;
+import net.blay09.mods.chattweaks.auth.TokenPair;
+import net.blay09.mods.chattweaks.balyware.gui.GuiPasswordField;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
@@ -98,11 +98,19 @@ public class GuiTwitchAuthentication extends GuiScreen {
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		final int windowHalfWidth = 150;
+		final int windowHalfHeight = 100;
+		drawRect(width / 2 - windowHalfWidth, height / 2 - windowHalfHeight, width / 2 + windowHalfWidth, height / 2 + windowHalfHeight, 0xDD000000);
+		drawHorizontalLine(width / 2 - windowHalfWidth - 1, width / 2 + windowHalfWidth, height / 2 - windowHalfHeight - 1, 0xFFFFFFFF);
+		drawHorizontalLine(width / 2 - windowHalfWidth - 1, width / 2 + windowHalfWidth, height / 2 + windowHalfHeight, 0xFFFFFFFF);
+		drawVerticalLine(width / 2 - windowHalfWidth - 1, height / 2 - windowHalfHeight - 1, height / 2 + windowHalfHeight, 0xFFFFFFFF);
+		drawVerticalLine(width / 2 + windowHalfWidth, height / 2 - windowHalfHeight - 1, height / 2 + windowHalfHeight, 0xFFFFFFFF);
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		GlStateManager.color(1f, 1f, 1f, 1f);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(twitchLogo);
 		drawModalRectWithCustomSizedTexture(width / 2 - 64, height / 2 - 80, 0, 0, 128, 43, 128, 43);
 		drawString(mc.fontRenderer, I18n.format(TwitchIntegration.MOD_ID + ":gui.authentication.chatToken"), width / 2 - 100, height / 2 + 5, 0xFFFFFF);
+		txtToken.drawTextBox();
 	}
 
 }

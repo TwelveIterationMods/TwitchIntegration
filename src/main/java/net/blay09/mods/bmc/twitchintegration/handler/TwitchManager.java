@@ -9,18 +9,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import net.blay09.javairc.IRCConfiguration;
 import net.blay09.javatmi.TMIClient;
-import net.blay09.mods.bmc.ChatManager;
-import net.blay09.mods.bmc.ChatTweaks;
-import net.blay09.mods.bmc.ChatViewManager;
-import net.blay09.mods.bmc.auth.TokenPair;
-import net.blay09.mods.bmc.chat.ChatView;
-import net.blay09.mods.bmc.chat.emotes.twitch.BTTVChannelEmotes;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
+import net.blay09.mods.chattweaks.ChatManager;
+import net.blay09.mods.chattweaks.ChatTweaks;
+import net.blay09.mods.chattweaks.ChatViewManager;
+import net.blay09.mods.chattweaks.auth.TokenPair;
+import net.blay09.mods.chattweaks.chat.ChatView;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.BTTVChannelEmotes;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -45,7 +46,11 @@ public class TwitchManager {
 
 	public void addChannel(TwitchChannel channel) {
 		channels.put(channel.getName().toLowerCase(), channel);
-		new BTTVChannelEmotes(channel.getName());
+		try {
+			new BTTVChannelEmotes(channel.getName()); // TODO thread me
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public Collection<TwitchChannel> getChannels() {
@@ -122,7 +127,11 @@ public class TwitchManager {
 	}
 
 	public void addNewChannel(TwitchChannel channel) {
-		new BTTVChannelEmotes(channel.getName());
+		try {
+			new BTTVChannelEmotes(channel.getName()); // TODO thread me
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		channels.put(channel.getName().toLowerCase(), channel);
 		updateChannelStates();
 		saveChannels();
@@ -144,11 +153,12 @@ public class TwitchManager {
 		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(configFile), StandardCharsets.UTF_8)) {
 			JsonObject root = gson.fromJson(reader, JsonObject.class);
 			JsonArray channels = root.getAsJsonArray("channels");
-			for(JsonElement element : channels) {
+			for (JsonElement element : channels) {
 				JsonObject obj = element.getAsJsonObject();
 				TwitchChannel channel = TwitchChannel.fromJson(obj);
 				addChannel(channel);
 			}
+		} catch (FileNotFoundException ignored) {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

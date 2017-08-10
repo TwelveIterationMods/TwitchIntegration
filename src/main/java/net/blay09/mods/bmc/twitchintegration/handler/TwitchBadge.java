@@ -2,11 +2,11 @@ package net.blay09.mods.bmc.twitchintegration.handler;
 
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
-import net.blay09.mods.bmc.balyware.CachedAPI;
-import net.blay09.mods.bmc.image.ITooltipProvider;
-import net.blay09.mods.bmc.image.renderable.IChatRenderable;
-import net.blay09.mods.bmc.image.renderable.ImageLoader;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.chattweaks.balyware.CachedAPI;
+import net.blay09.mods.chattweaks.image.ITooltipProvider;
+import net.blay09.mods.chattweaks.image.renderable.IChatRenderable;
+import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;

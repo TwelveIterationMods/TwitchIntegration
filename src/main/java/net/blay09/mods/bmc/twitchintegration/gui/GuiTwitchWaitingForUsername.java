@@ -1,4 +1,4 @@
-package net.blay09.mods.bmc.twitchintegration.gui.old;
+package net.blay09.mods.bmc.twitchintegration.gui;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;

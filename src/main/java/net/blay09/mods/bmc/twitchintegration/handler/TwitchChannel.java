@@ -1,9 +1,9 @@
 package net.blay09.mods.bmc.twitchintegration.handler;
 
 import com.google.gson.JsonObject;
-import net.blay09.mods.bmc.ChatManager;
-import net.blay09.mods.bmc.chat.ChatChannel;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.chattweaks.ChatManager;
+import net.blay09.mods.chattweaks.chat.ChatChannel;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Locale;

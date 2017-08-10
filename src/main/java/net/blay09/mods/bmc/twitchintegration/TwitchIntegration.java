@@ -66,15 +66,6 @@ public class TwitchIntegration {
 		}
 	}
 
-//	public GuiScreen getConfigScreen(GuiScreen parentScreen) { // TODO unused
-//		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
-//		if (tokenPair != null) {
-//			return new GuiTwitchChannels();
-//		} else {
-//			return new GuiTwitchAuthentication(parentScreen);
-//		}
-//	}
-
 	public static TwitchChatHandler getTwitchChatHandler() {
 		return instance.twitchChatHandler;
 	}

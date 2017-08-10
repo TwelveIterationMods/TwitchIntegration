@@ -3,9 +3,9 @@ package net.blay09.mods.bmc.twitchintegration.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.blay09.mods.bmc.ChatTweaks;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.gui.old.GuiTwitchWaitingForUsername;
+import net.blay09.mods.bmc.twitchintegration.gui.GuiTwitchWaitingForUsername;
+import net.blay09.mods.chattweaks.ChatTweaks;
 import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
