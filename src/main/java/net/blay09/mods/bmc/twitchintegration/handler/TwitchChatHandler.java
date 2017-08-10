@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
@@ -124,9 +125,15 @@ public class TwitchChatHandler extends TMIAdapter {
 
 			// If the channel id is not known yet (because this is the first message sent and it's from this client), poll the API instead
 			if (twitchChannel != null && twitchChannel.getId() == -1 && isSelf) {
-				JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/channels/" + twitchChannel.getName() + "?client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "twitch_" + twitchChannel.getName(), "application/vnd.twitchtv.v5+json");
-				if (object != null && object.has("_id")) {
-					twitchChannel.setId(object.get("_id").getAsInt());
+				JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/users?login=" + twitchChannel.getName() + "&client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "twitch_" + twitchChannel.getName(), "application/vnd.twitchtv.v5+json");
+				if (object != null && object.has("users")) {
+					JsonArray array = object.getAsJsonArray("users");
+					if(array.size() > 0) {
+						JsonObject userObject = array.get(0).getAsJsonObject();
+						if(userObject.has("_id")) {
+							twitchChannel.setId(userObject.get("_id").getAsInt());
+						}
+					}
 				}
 			}
 
@@ -148,7 +155,7 @@ public class TwitchChatHandler extends TMIAdapter {
 			StringBuilder sb = new StringBuilder();
 			for (PositionedEmote emoteData : emoteList) {
 				if (index < emoteData.getStart()) {
-					sb.append(twitchMessage.getMessage().substring(index, emoteData.getStart()));
+					sb.append(twitchMessage.getMessage().substring(index, emoteData.getStart())).append(' '); // This space is definitely not a dirty hack, don't worry
 				}
 				int imageIndex = sb.length() + 1;
 				sb.append("§*");
@@ -365,7 +372,7 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	@Override
-	public void onTimeout(TMIClient client, final String channel, final String username) {
+	public void onTimeout(TMIClient client, final String channel, final String username) { // TODO test me
 		Minecraft.getMinecraft().addScheduledTask(() -> {
 			TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 			if (twitchChannel != null) {
@@ -443,12 +450,12 @@ public class TwitchChatHandler extends TMIAdapter {
 								}
 							}
 						}
-						ITextComponent userComponent = new TextComponentString(sb.toString() + ChatTweaks.TEXT_FORMATTING_RGB + user.getDisplayName());
+						ITextComponent userComponent = new TextComponentString(sb.toString() + ChatTweaks.TEXT_FORMATTING_RGB + user.getDisplayName() + ChatTweaks.TEXT_FORMATTING_RGB);
 						root.appendSibling(userComponent);
 						break;
 					case 'r':
 						if(whisperReceiver != null) {
-							ITextComponent receiverComponent = new TextComponentString(ChatTweaks.TEXT_FORMATTING_RGB + whisperReceiver.getDisplayName());
+							ITextComponent receiverComponent = new TextComponentString(ChatTweaks.TEXT_FORMATTING_RGB + whisperReceiver.getDisplayName() + ChatTweaks.TEXT_FORMATTING_RGB);
 							root.appendSibling(receiverComponent);
 						} else {
 							root.appendText("%r");
@@ -460,6 +467,7 @@ public class TwitchChatHandler extends TMIAdapter {
 								chatImage.setIndex(chatImage.getIndex() + root.getFormattedText().length());
 							}
 						}
+						message = TextFormatting.getTextWithoutFormattingCodes(message);
 						root.appendSibling(ForgeHooks.newChatWithLinks(isAction ? ChatTweaks.TEXT_FORMATTING_RGB + message : message));
 						break;
 				}

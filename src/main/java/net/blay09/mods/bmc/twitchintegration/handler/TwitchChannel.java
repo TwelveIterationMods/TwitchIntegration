@@ -28,7 +28,7 @@ public class TwitchChannel {
 	private final String name;
 	private ChatChannel chatChannel;
 	private boolean subscribersOnly;
-	private DeletedMessages deletedMessages = DeletedMessages.SHOW;
+	private DeletedMessages deletedMessages = DeletedMessages.REPLACE;
 	private boolean active;
 	private int id = -1;
 

@@ -43,7 +43,9 @@ public class CommandTwitch extends CommandBase {
 		TwitchChatHandler twitchChatHandler = TwitchIntegration.getTwitchChatHandler();
 		if(twitchClient != null) {
 			if(args[0].startsWith("#")) {
+				long now = System.nanoTime();
 				twitchClient.send(args[0], message);
+				System.out.println("sending took " + (System.nanoTime() - now) + " nanos");
 				if(message.startsWith("/me ")) {
 					message = message.substring(4);
 					twitchChatHandler.onChatMessage(twitchClient, args[0], twitchChatHandler.getThisUser(twitchClient, args[0]), new TwitchMessage(message, -1, true, 0));

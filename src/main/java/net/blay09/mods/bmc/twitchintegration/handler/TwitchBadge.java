@@ -48,10 +48,8 @@ public class TwitchBadge {
 				JsonObject jsonImage = badges.getAsJsonObject("subscriber").getAsJsonObject("versions").getAsJsonObject(String.valueOf(subMonths));
 				try {
 					IChatRenderable chatRenderable = ImageLoader.loadImage(new URI(jsonImage.get("image_url_1x").getAsString()), new File(Minecraft.getMinecraft().mcDataDir, "bmc/cache/badge_" + channel.getName() + "_" + subMonths));
-					if(chatRenderable != null) {
-						chatRenderable.setScale(0.45f);
-						badge = new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY);
-					}
+					chatRenderable.setScale(0.45f);
+					badge = new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY);
 				} catch (IOException | URISyntaxException e) {
 					e.printStackTrace();
 				}
@@ -65,10 +63,8 @@ public class TwitchBadge {
 		try {
 			IResource resource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_" + name + ".png"));
 			IChatRenderable chatRenderable = ImageLoader.loadImage(resource.getInputStream(), null);
-			if(chatRenderable != null) {
-				chatRenderable.setScale(0.45f);
-				twitchBadges.put(name, new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY));
-			}
+			chatRenderable.setScale(0.45f);
+			twitchBadges.put(name, new TwitchBadge(chatRenderable, ITooltipProvider.EMPTY));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

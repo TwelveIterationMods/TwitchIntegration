@@ -12,6 +12,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
@@ -23,6 +25,8 @@ public class TwitchIntegration {
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;
+
+	public static Logger logger = LogManager.getLogger(MOD_ID);
 
 	private TwitchManager twitchManager;
 	private TwitchChatHandler twitchChatHandler;
@@ -36,7 +40,7 @@ public class TwitchIntegration {
 
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
-		twitchManager = new TwitchManager(new File(Minecraft.getMinecraft().mcDataDir, "config/ChatTweaks/twitch_channels.json"));
+		twitchManager = new TwitchManager(new File(Minecraft.getMinecraft().mcDataDir, "config/TwitchIntegration/twitch_channels.json"));
 		twitchChatHandler = new TwitchChatHandler(twitchManager);
 	}
 
@@ -49,14 +53,18 @@ public class TwitchIntegration {
 		TwitchBadge.loadInbuiltBadge("admin");
 		TwitchBadge.loadInbuiltBadge("global_mod");
 		TwitchBadge.loadInbuiltBadge("premium");
+		TwitchBadge.loadInbuiltBadge("verified");
 		TwitchBadge.loadInbuiltBadge("bits1");
 		TwitchBadge.loadInbuiltBadge("bits100");
 		TwitchBadge.loadInbuiltBadge("bits1000");
 		TwitchBadge.loadInbuiltBadge("bits5000");
 		TwitchBadge.loadInbuiltBadge("bits10000");
-		TwitchBadge.loadInbuiltBadge("bits100000");
-
-		// TODO needs changes when we update to new channel badges
+		TwitchBadge.loadInbuiltBadge("bits25000");
+		TwitchBadge.loadInbuiltBadge("bits50000");
+		TwitchBadge.loadInbuiltBadge("bits75000");
+		for(int i = 100000; i <= 1000000; i += 100000) {
+			TwitchBadge.loadInbuiltBadge("bits" + i);
+		}
 	}
 
 	@SubscribeEvent

@@ -17,6 +17,7 @@ import net.blay09.mods.chattweaks.ChatViewManager;
 import net.blay09.mods.chattweaks.auth.TokenPair;
 import net.blay09.mods.chattweaks.chat.ChatView;
 import net.blay09.mods.chattweaks.chat.emotes.twitch.BTTVChannelEmotes;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.FFZChannelEmotes;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -46,11 +47,18 @@ public class TwitchManager {
 
 	public void addChannel(TwitchChannel channel) {
 		channels.put(channel.getName().toLowerCase(), channel);
-		try {
-			new BTTVChannelEmotes(channel.getName()); // TODO thread me
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		new Thread(() -> {
+			try {
+				new BTTVChannelEmotes(channel.getName());
+			} catch (Exception e) {
+				TwitchIntegration.logger.error("Failed to load BTTV channel emotes: ", e);
+			}
+			try {
+				new FFZChannelEmotes(channel.getName());
+			} catch (Exception e) {
+				TwitchIntegration.logger.error("Failed to load FFZ channel emotes: ", e);
+			}
+		}).start();
 	}
 
 	public Collection<TwitchChannel> getChannels() {
@@ -69,6 +77,7 @@ public class TwitchManager {
 			TwitchChannel channel = new TwitchChannel(tokenPair.getUsername());
 			channel.setActive(true);
 			channels.put(channel.getName().toLowerCase(), channel);
+			saveChannels();
 
 			ChatView twitchView = new ChatView(channel.getName());
 			twitchView.setOutgoingPrefix("/twitch #" + channel.getName().toLowerCase(Locale.ENGLISH) + " ");
@@ -127,11 +136,18 @@ public class TwitchManager {
 	}
 
 	public void addNewChannel(TwitchChannel channel) {
-		try {
-			new BTTVChannelEmotes(channel.getName()); // TODO thread me
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		new Thread(() -> {
+			try {
+				new BTTVChannelEmotes(channel.getName());
+			} catch (Exception e) {
+				TwitchIntegration.logger.error("Failed to load BTTV channel emotes: ", e);
+			}
+			try {
+				new FFZChannelEmotes(channel.getName());
+			} catch (Exception e) {
+				TwitchIntegration.logger.error("Failed to load FFZ channel emotes: ", e);
+			}
+		}).start();
 		channels.put(channel.getName().toLowerCase(), channel);
 		updateChannelStates();
 		saveChannels();
