@@ -3,10 +3,7 @@ package net.blay09.mods.bmc.twitchintegration.gui;
 import com.google.common.collect.Lists;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
-import net.blay09.mods.chattweaks.auth.AuthManager;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
@@ -36,6 +33,8 @@ public class ConfigGUI extends GuiConfig {
 
 		String authLangKey = isAuthenticated ? "twitchintegration.config.edit_authentication" : "twitchintegration.config.authenticate";
 		list.add(new DummyConfigElement.DummyCategoryElement(authLangKey, authLangKey, ConfigEntryAuthenticate.class));
+
+		list.add(GuiTwitchChannelsConfig.getDummyElement());
 
 		list.addAll(ConfigElement.from(TwitchIntegrationConfig.class).getChildElements());
 

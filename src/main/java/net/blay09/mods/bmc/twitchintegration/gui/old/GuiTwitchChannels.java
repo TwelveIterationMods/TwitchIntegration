@@ -66,7 +66,7 @@
 //		chkDeletedMessagesShow = new GuiCheckBox(3, width / 2 - 2, height / 2 + 5, I18n.format(TwitchIntegration.MOD_ID + ":gui.channels.deletedMessages.showNormally"), false);
 //		buttonList.add(chkDeletedMessagesShow);
 //
-//		chkDeletedMessagesStrikethrough = new GuiCheckBox(4, width / 2 - 2, height / 2 + 20, TextFormatting.STRIKETHROUGH + I18n.format(TwitchIntegration.MOD_ID + ":gui.channels.deletedMessages.strikethrough"), false);
+//		chkDeletedMessagesStrikethrough = new GuiCheckBox(4, width / 2 - 2, height / 2 + 20, TextFormatting.Strikethrough + I18n.format(TwitchIntegration.MOD_ID + ":gui.channels.deletedMessages.strikethrough"), false);
 //		buttonList.add(chkDeletedMessagesStrikethrough);
 //
 //		chkDeletedMessagesReplace = new GuiCheckBox(5, width / 2 - 2, height / 2 + 35, TextFormatting.ITALIC + I18n.format(TwitchIntegration.MOD_ID + ":gui.channels.deletedMessages.messageDeleted"), false);
@@ -239,10 +239,10 @@
 //		if(channel != null) {
 //			chkActive.setIsChecked(channel.isActive());
 //			chkSubscribersOnly.setIsChecked(channel.isSubscribersOnly());
-//			chkDeletedMessagesShow.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.SHOW);
-//			chkDeletedMessagesStrikethrough.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.STRIKETHROUGH);
-//			chkDeletedMessagesReplace.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.REPLACE);
-//			chkDeletedMessagesHide.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.HIDE);
+//			chkDeletedMessagesShow.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.Show);
+//			chkDeletedMessagesStrikethrough.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.Strikethrough);
+//			chkDeletedMessagesReplace.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.Replace);
+//			chkDeletedMessagesHide.setIsChecked(channel.getDeletedMessages() == TwitchChannel.DeletedMessages.Hide);
 //		}
 //	}
 //
@@ -252,16 +252,16 @@
 //			selectedChannel.setActive(chkActive.isChecked());
 //			selectedChannel.setSubscribersOnly(chkSubscribersOnly.isChecked());
 //			if (chkDeletedMessagesShow.isChecked()) {
-//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.SHOW);
+//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.Show);
 //			} else if (chkDeletedMessagesStrikethrough.isChecked()) {
-//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.STRIKETHROUGH);
+//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.Strikethrough);
 //			} else if (chkDeletedMessagesReplace.isChecked()) {
-//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.REPLACE);
+//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.Replace);
 //			} else if (chkDeletedMessagesHide.isChecked()) {
-//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.HIDE);
+//				selectedChannel.setDeletedMessages(TwitchChannel.DeletedMessages.Hide);
 //			}
 //			IChatChannel twitchTab = BetterMinecraftChatAPI.getChatChannel(selectedChannel.getName(), true);
-//			twitchTab.setOutgoingPrefix("/twitch #" + selectedChannel.getName().toLowerCase() + " ");
+//			twitchTab.setOutgoingPrefix("/twitch #" + selectedChannel.getName().toLowerCase(Locale.ENGLISH) + " ");
 //			twitchTab.setMessageStyle(selectedChannel.isActive() ? MessageStyle.Chat : MessageStyle.Hidden);
 //			if(selectedChannel.getTargetTabName().equals(selectedChannel.getName())) {
 //				twitchTab.setDisplayChannel(null);

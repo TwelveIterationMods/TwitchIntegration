@@ -37,7 +37,7 @@ public class TwitchManager {
 
 	private final File configFile;
 	private final Map<String, TwitchChannel> channels = Maps.newHashMap();
-	private final List<TwitchChannel> activeChannels = Lists.newArrayList();
+	private final List<TwitchChannel> activeChannels = Lists.newArrayList(); // TODO check this
 	private TMIClient twitchClient;
 
 	public TwitchManager(File configFile) {
@@ -46,7 +46,8 @@ public class TwitchManager {
 	}
 
 	public void addChannel(TwitchChannel channel) {
-		channels.put(channel.getName().toLowerCase(), channel);
+		channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
+		// TODO this could be cleaned up, it shouldn't be here:
 		new Thread(() -> {
 			try {
 				new BTTVChannelEmotes(channel.getName());
@@ -73,24 +74,29 @@ public class TwitchManager {
 	public void connect() {
 		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
 
-		if(tokenPair != null && !channels.containsKey(tokenPair.getUsername().toLowerCase())) {
-			TwitchChannel channel = new TwitchChannel(tokenPair.getUsername());
-			channel.setActive(true);
-			channels.put(channel.getName().toLowerCase(), channel);
-			saveChannels();
+		if (tokenPair != null && !channels.containsKey(tokenPair.getUsername().toLowerCase(Locale.ENGLISH))) {
+			TwitchChannel[] defaultChannels = createDefaults();
+			if(defaultChannels.length > 0) {
+				TwitchChannel channel = defaultChannels[0];
+				channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
+				saveChannels();
 
-			ChatView twitchView = new ChatView(channel.getName());
-			twitchView.setOutgoingPrefix("/twitch #" + channel.getName().toLowerCase(Locale.ENGLISH) + " ");
-			ChatViewManager.save();
+				// TODO extract this into a method so we can use it in config gui
+				ChatView twitchView = new ChatView(channel.getName());
+				twitchView.setOutgoingPrefix("/twitch #" + channel.getName().toLowerCase(Locale.ENGLISH) + " ");
+				ChatViewManager.addChatView(twitchView);
+				ChatViewManager.save();
+			}
 		}
 
-		if(tokenPair != null) {
+		// TODO anon login
+		if (tokenPair != null) {
 			String token = tokenPair.getToken().startsWith("oauth:") ? tokenPair.getToken() : "oauth:" + tokenPair.getToken();
 			IRCConfiguration.IRCConfigurationBuilder builder = TMIClient.defaultBuilder().debug(true).nick(tokenPair.getUsername()).password(token);
 			builder.port(TwitchIntegrationConfig.port);
-			for(TwitchChannel channel : channels.values()) {
-				if(channel.isActive()) {
-					builder.autoJoinChannel("#" + channel.getName().toLowerCase());
+			for (TwitchChannel channel : channels.values()) {
+				if (channel.isActive()) {
+					builder.autoJoinChannel("#" + channel.getName().toLowerCase(Locale.ENGLISH));
 					activeChannels.add(channel);
 				}
 			}
@@ -100,7 +106,7 @@ public class TwitchManager {
 	}
 
 	public void disconnect() {
-		if(twitchClient != null) {
+		if (twitchClient != null) {
 			twitchClient.disconnect();
 			activeChannels.clear();
 			twitchClient = null;
@@ -111,21 +117,22 @@ public class TwitchManager {
 		return twitchClient != null && twitchClient.getIRCConnection().isConnected();
 	}
 
+	@Deprecated // TODO this should be replaced by a variable in the output format, normally people will have their own view for a channel
 	public boolean isMultiMode() {
 		return activeChannels.size() > 1;
 	}
 
 	public void updateChannelStates() {
 		activeChannels.clear();
-		for(TwitchChannel channel : channels.values()) {
-			if(channel.isActive()) {
+		for (TwitchChannel channel : channels.values()) {
+			if (channel.isActive()) {
 				activeChannels.add(channel);
-				if(twitchClient != null) {
-					twitchClient.join("#" + channel.getName().toLowerCase());
+				if (twitchClient != null) {
+					twitchClient.join("#" + channel.getName().toLowerCase(Locale.ENGLISH));
 				}
 			} else {
-				if(twitchClient != null) {
-					twitchClient.part("#" + channel.getName().toLowerCase());
+				if (twitchClient != null) {
+					twitchClient.part("#" + channel.getName().toLowerCase(Locale.ENGLISH));
 				}
 			}
 		}
@@ -133,36 +140,17 @@ public class TwitchManager {
 
 	@Nullable
 	public TwitchChannel getTwitchChannel(String channel) {
-		return channels.get(channel.charAt(0) == '#' ? channel.substring(1).toLowerCase() : channel.toLowerCase());
-	}
-
-	public void addNewChannel(TwitchChannel channel) {
-		new Thread(() -> {
-			try {
-				new BTTVChannelEmotes(channel.getName());
-			} catch (Exception e) {
-				TwitchIntegration.logger.error("Failed to load BTTV channel emotes: ", e);
-			}
-			try {
-				new FFZChannelEmotes(channel.getName());
-			} catch (Exception e) {
-				TwitchIntegration.logger.error("Failed to load FFZ channel emotes: ", e);
-			}
-		}).start();
-		channels.put(channel.getName().toLowerCase(), channel);
-		updateChannelStates();
-		saveChannels();
+		return channels.get(channel.charAt(0) == '#' ? channel.substring(1).toLowerCase(Locale.ENGLISH) : channel.toLowerCase(Locale.ENGLISH));
 	}
 
 	public void removeTwitchChannel(TwitchChannel channel) {
 		ChatManager.removeChatChannel(channel.getChatChannel().getName());
-		channels.remove(channel.getName().toLowerCase());
-		if(activeChannels.remove(channel)) {
-			if(twitchClient != null) {
-				twitchClient.part("#" + channel.getName().toLowerCase());
+		channels.remove(channel.getName().toLowerCase(Locale.ENGLISH));
+		if (activeChannels.remove(channel)) {
+			if (twitchClient != null) {
+				twitchClient.part("#" + channel.getName().toLowerCase(Locale.ENGLISH));
 			}
 		}
-		saveChannels();
 	}
 
 	public void loadChannels() {
@@ -177,14 +165,14 @@ public class TwitchManager {
 			}
 		} catch (FileNotFoundException ignored) {
 		} catch (IOException e) {
-			e.printStackTrace();
+			TwitchIntegration.logger.error("Could not load Twitch channel configurations: ", e);
 		}
 	}
 
 	public void saveChannels() {
 		JsonObject root = new JsonObject();
 		JsonArray channels = new JsonArray();
-		for(TwitchChannel channel : this.channels.values()) {
+		for (TwitchChannel channel : this.channels.values()) {
 			channels.add(channel.toJson());
 		}
 		root.add("channels", channels);
@@ -193,7 +181,28 @@ public class TwitchManager {
 			writer.setIndent("  ");
 			gson.toJson(root, writer);
 		} catch (IOException e) {
-			e.printStackTrace();
+			TwitchIntegration.logger.error("Could not save Twitch channel configurations: ", e);
 		}
+	}
+
+	public TwitchChannel[] createDefaults() {
+		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
+		if (tokenPair != null) {
+			TwitchChannel defaultChannel = new TwitchChannel(tokenPair.getUsername());
+			defaultChannel.setActive(true);
+			return new TwitchChannel[]{defaultChannel};
+		}
+		return new TwitchChannel[0];
+	}
+
+	public void removeAllChannels() {
+		channels.clear();
+		activeChannels.clear();
+	}
+
+	public void renameTwitchChannel(TwitchChannel twitchChannel, String newName) {
+		removeTwitchChannel(twitchChannel);
+		twitchChannel.setName(newName);
+		addChannel(twitchChannel);
 	}
 }

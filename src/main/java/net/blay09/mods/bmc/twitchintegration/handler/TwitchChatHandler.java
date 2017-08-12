@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import gnu.trove.list.array.TIntArrayList;
 import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -173,7 +175,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				}
 				user.setBadges(tmpBadgeNames.toArray(new String[tmpBadgeNames.size()]));
 			}
-			if (twitchChannel != null && user.hasBadges()) {
+			if (twitchChannel != null && user.hasBadges() && !TwitchIntegrationConfig.disableNameBadges) {
 				for (String badgeName : user.getBadges()) {
 					int slash = badgeName.indexOf('/');
 					int version = 0;
@@ -203,14 +205,14 @@ public class TwitchChatHandler extends TMIAdapter {
 			for (ChatImage chatImage : tmpEmotes) {
 				chatMessage.addImage(chatImage);
 			}
-			if (user.hasColor()) {
+			if (user.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
 				int nameColor = ChatTweaks.colorFromHex(user.getColor());
 				chatMessage.setRGBColor(0, getAcceptableNameColor(nameColor));
 			} else {
 				chatMessage.setRGBColor(0, 0x808080);
 			}
 			if (twitchMessage.isAction()) {
-				if (user.hasColor()) {
+				if (user.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
 					int nameColor = ChatTweaks.colorFromHex(user.getColor());
 					chatMessage.setRGBColor(1, getAcceptableNameColor(nameColor));
 				} else {
@@ -218,8 +220,8 @@ public class TwitchChatHandler extends TMIAdapter {
 				}
 			}
 
-			messages.put(new ChannelUser(channel, user.getNick().toLowerCase()), chatMessage);
-			users.put(user.getNick().toLowerCase(), user);
+			messages.put(new ChannelUser(channel, user.getNick().toLowerCase(Locale.ENGLISH)), chatMessage);
+			users.put(user.getNick().toLowerCase(Locale.ENGLISH), user);
 			ChatTweaks.addChatMessage(chatMessage, targetChannel);
 		});
 	}
@@ -310,20 +312,20 @@ public class TwitchChatHandler extends TMIAdapter {
 				for (ChatImage chatImage : tmpEmotes) {
 					chatMessage.addImage(chatImage);
 				}
-				if (user.hasColor()) {
+				if (user.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
 					int nameColor = ChatTweaks.colorFromHex(user.getColor());
 					chatMessage.setRGBColor(0, getAcceptableNameColor(nameColor));
 				} else {
 					chatMessage.setRGBColor(0, 0x808080);
 				}
-				if (receiver.hasColor()) { // TODO this assumes that receiver is always in second place, which makes sense but isn't perfect
+				if (receiver.hasColor() && !TwitchIntegrationConfig.disableUserColors) { // TODO this assumes that receiver is always in second place, which makes sense but isn't perfect
 					int nameColor = ChatTweaks.colorFromHex(receiver.getColor());
 					chatMessage.setRGBColor(1, getAcceptableNameColor(nameColor));
 				} else {
 					chatMessage.setRGBColor(1, 0x808080);
 				}
 				if (isAction) { // TODO this assumes that message is always in third place, which makes sense but isn't perfect
-					if (user.hasColor()) {
+					if (user.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
 						int nameColor = ChatTweaks.colorFromHex(user.getColor());
 						chatMessage.setRGBColor(2, getAcceptableNameColor(nameColor));
 					} else {
@@ -333,10 +335,10 @@ public class TwitchChatHandler extends TMIAdapter {
 
 				ChatView whisperView = ChatViewManager.getOrCreateChatView(whisperChannel.getName());
 				whisperView.addChannel(whisperChannel);
-				whisperView.setOutgoingPrefix("/twitch " + (isSelf ? receiver.getNick().toLowerCase() : user.getNick().toLowerCase()) + " ");
+				whisperView.setOutgoingPrefix("/twitch " + (isSelf ? receiver.getNick().toLowerCase(Locale.ENGLISH) : user.getNick().toLowerCase(Locale.ENGLISH)) + " ");
 				whisperView.setTemporary(true);
 
-				users.put(user.getNick().toLowerCase(), user);
+				users.put(user.getNick().toLowerCase(Locale.ENGLISH), user);
 				ChatTweaks.addChatMessage(chatMessage, whisperChannel);
 			}
 		});
@@ -348,19 +350,19 @@ public class TwitchChatHandler extends TMIAdapter {
 			TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 			if (twitchChannel != null) {
 				switch (twitchChannel.getDeletedMessages()) {
-					case HIDE:
+					case Hide:
 						for (ChatMessage message : messages.get(new ChannelUser(channel, username))) {
 							ChatManager.removeChatLine(message.getId());
 						}
 						ChatTweaks.refreshChat();
 						break;
-					case STRIKETHROUGH:
+					case Strikethrough:
 						for (ChatMessage message : messages.get(new ChannelUser(channel, username))) {
 							message.getTextComponent().getStyle().setStrikethrough(true);
 						}
 						ChatTweaks.refreshChat();
 						break;
-					case REPLACE:
+					case Replace:
 						TwitchUser user = users.get(username);
 						if (user == null) {
 							user = new TwitchUser(new IRCUser(username, null, null));
@@ -389,7 +391,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
 	@Override
 	public void onUnhandledException(TMIClient client, final Exception e) {
-		e.printStackTrace();
+		TwitchIntegration.logger.error("Unhandled exception: ", e);
 		Minecraft.getMinecraft().addScheduledTask(() -> {
 			if(Minecraft.getMinecraft().player != null) {
 				Minecraft.getMinecraft().player.sendStatusMessage(new TextComponentString(TextFormatting.RED + "Twitch Integration encountered an unhandled exception. The connection has been terminated. Please review your log files and let the mod developer know."), false);
@@ -467,7 +469,7 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	public TwitchUser getUser(String username) {
-		return users.computeIfAbsent(username.toLowerCase(), k -> new TwitchUser(new IRCUser(username, null, null)));
+		return users.computeIfAbsent(username.toLowerCase(Locale.ENGLISH), k -> new TwitchUser(new IRCUser(username, null, null)));
 	}
 
 	private final float[] tmpHSB = new float[3];

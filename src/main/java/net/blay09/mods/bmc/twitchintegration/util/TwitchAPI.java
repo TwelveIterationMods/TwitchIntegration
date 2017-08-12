@@ -122,7 +122,7 @@ public class TwitchAPI {
 			Object desktop = desktopClass.getMethod("getDesktop").invoke(null);
 			desktopClass.getMethod("browse", URI.class).invoke(desktop, new URI(TWITCH_AUTHORIZE.replace("{{CLIENT_ID}}", CLIENT_ID).replace("{{REDIRECT_URI}}", OAUTH_REDIRECT_URI)));
 		} catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | URISyntaxException e) {
-			e.printStackTrace();
+			TwitchIntegration.logger.error("Could not open your browser - please copy the link into your browser manually.", e);
 		}
 	}
 
@@ -137,12 +137,11 @@ public class TwitchAPI {
 						String username = root.getAsJsonObject("token").get("user_name").getAsString();
 						ChatTweaks.getAuthManager().storeToken(TwitchIntegration.MOD_ID, username, token);
 						Minecraft.getMinecraft().addScheduledTask(callback);
-					} catch (JsonParseException e) {
-						e.printStackTrace();
-					}
+					} catch (Exception e) {
+						TwitchIntegration.logger.error("Failed to retrieve your username from the Twitch token. Please try again.", e);					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				TwitchIntegration.logger.error("Failed to retrieve your username from the token. Please try again.", e);
 			}
 		}).start();
 	}

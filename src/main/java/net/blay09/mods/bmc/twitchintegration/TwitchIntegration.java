@@ -5,6 +5,9 @@ import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -21,6 +24,8 @@ guiFactory = "net.blay09.mods.bmc.twitchintegration.gui.GuiFactory")
 public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
+	// TODO Channel configuration
+	// TODO Edit Message Format is empty
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;
@@ -50,6 +55,13 @@ public class TwitchIntegration {
 	public void onWorldJoined(FMLNetworkEvent.ClientConnectedToServerEvent event) {
 		if(!twitchManager.isConnected()) {
 			twitchManager.connect();
+		}
+	}
+
+	@SubscribeEvent
+	public void onConfigChanged(ConfigChangedEvent event) {
+		if(MOD_ID.equals(event.getModID())) {
+			ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
 		}
 	}
 

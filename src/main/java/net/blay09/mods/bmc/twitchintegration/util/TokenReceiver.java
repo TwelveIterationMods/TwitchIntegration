@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package net.blay09.mods.bmc.twitchintegration.util;
 
 import com.google.common.collect.Lists;
+import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -21,6 +22,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class TokenReceiver implements Runnable {
 
@@ -49,7 +51,7 @@ public abstract class TokenReceiver implements Runnable {
 		try {
 			serverSocket = new ServerSocket(PORT, 0, InetAddress.getLoopbackAddress());
 		} catch (IOException e) {
-			e.printStackTrace();
+			TwitchIntegration.logger.error("Could not listen for the Twitch token: ", e);
 			stop();
 			return;
 		}
@@ -121,7 +123,7 @@ public abstract class TokenReceiver implements Runnable {
 				content = "An error occurred (couldn't read file)";
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			TwitchIntegration.logger.error("An error occured in the Twitch token receiver: ", e);
 			content = "An error occurred (couldn't read file)";
 		}
 		return makeHeader(true) + content;
@@ -157,7 +159,7 @@ public abstract class TokenReceiver implements Runnable {
 				if (request != null) {
 					try (OutputStream output = socket.getOutputStream()) {
 						String response;
-						if (request.toLowerCase().startsWith("get /token/")) {
+						if (request.toLowerCase(Locale.ENGLISH).startsWith("get /token/")) {
 							String token = parseToken(request);
 							if (token.isEmpty()) {
 								response = sendFile("/token_redirect.html");
@@ -165,7 +167,7 @@ public abstract class TokenReceiver implements Runnable {
 								response = sendFile("/token_received.html");
 								onTokenReceived(token);
 							}
-						} else if (request.toLowerCase().startsWith("get /tokenreceived/")) {
+						} else if (request.toLowerCase(Locale.ENGLISH).startsWith("get /tokenreceived/")) {
 							response = sendFile("/token_received_no_redirect.html");
 						} else {
 							response = sendFile(null);
@@ -176,7 +178,7 @@ public abstract class TokenReceiver implements Runnable {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				TwitchIntegration.logger.error("Could not retrieve the Twitch token: ", e);
 			}
 		}
 

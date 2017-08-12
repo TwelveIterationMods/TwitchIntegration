@@ -1,53 +1,55 @@
 package net.blay09.mods.bmc.twitchintegration.handler;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.util.TwitchAPI;
 import net.blay09.mods.chattweaks.ChatManager;
-import net.blay09.mods.chattweaks.balyware.CachedAPI;
 import net.blay09.mods.chattweaks.chat.ChatChannel;
-import net.blay09.mods.chattweaks.image.ITooltipProvider;
-import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Map;
 
 public class TwitchChannel {
 
 	public enum DeletedMessages {
-		SHOW,
-		STRIKETHROUGH,
-		REPLACE,
-		HIDE;
+		Show,
+		Strikethrough,
+		Replace,
+		Hide;
 
 		public static DeletedMessages fromName(String name) {
 			try {
-				return valueOf(name.toUpperCase());
+				return valueOf(name);
 			} catch (IllegalArgumentException e) {
-				return HIDE;
+				return Replace;
 			}
 		}
 	}
 
-	private final String name;
+	private String name;
 	private ChatChannel chatChannel;
 	private boolean subscribersOnly;
-	private DeletedMessages deletedMessages = DeletedMessages.REPLACE;
-	private boolean active;
+	private DeletedMessages deletedMessages = DeletedMessages.Replace;
+	private boolean active = true;
 	private int id = -1;
 	private Map<String, TwitchBadge> badges;
 
 	public TwitchChannel(String name) {
+		setName(name);
+	}
+
+	public void setName(String name) {
+		if(this.name != null) {
+			ChatManager.removeChatChannel(this.name);
+		}
 		this.name = name;
-		chatChannel = new ChatChannel(name, "Twitch Chat for '" + name + "'", new ResourceLocation(TwitchIntegration.MOD_ID, "icon.png"));
-		ChatManager.addChatChannel(chatChannel);
+		chatChannel = ChatManager.getChatChannel(name);
+		if(chatChannel == null) {
+			chatChannel = new ChatChannel(name, "Twitch Chat for '" + name + "'", new ResourceLocation(TwitchIntegration.MOD_ID, "icon.png"));
+			ChatManager.addChatChannel(chatChannel);
+		}
 	}
 
 	public int getId() {
@@ -96,7 +98,7 @@ public class TwitchChannel {
 		obj.addProperty("name", name);
 		obj.addProperty("subscribersOnly", subscribersOnly);
 		obj.addProperty("channelId", id);
-		obj.addProperty("deletedMessages", deletedMessages.name().toLowerCase(Locale.ENGLISH));
+		obj.addProperty("deletedMessages", deletedMessages.name());
 		obj.addProperty("active", active);
 		return obj;
 	}

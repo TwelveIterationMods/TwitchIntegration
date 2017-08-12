@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Locale;
 
 public class CommandTwitch extends CommandBase {
 
@@ -62,7 +63,7 @@ public class CommandTwitch extends CommandBase {
 		List<String> completions = Lists.newArrayList();
 		for(TwitchChannel channel : TwitchIntegration.getTwitchManager().getChannels()) {
 			if(channel.isActive()) {
-				completions.add("#" + channel.getName().toLowerCase());
+				completions.add("#" + channel.getName().toLowerCase(Locale.ENGLISH));
 			}
 		}
 		return getListOfStringsMatchingLastWord(args, completions);
