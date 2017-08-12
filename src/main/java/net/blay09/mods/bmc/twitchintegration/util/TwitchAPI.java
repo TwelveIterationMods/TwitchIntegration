@@ -91,6 +91,9 @@ public class TwitchAPI {
 					}
 					JsonObject badgeObject = entry.getValue().getAsJsonObject();
 					try {
+						// TODO [13:58:34] [Client thread/ERROR]: Unexpected error when loading chat badges for channel Gosu:
+						// java.lang.NullPointerException
+						// at net.blay09.mods.bmc.twitchintegration.util.TwitchAPI.loadChannelSpecificBadges(TwitchAPI.java:94) ~[TwitchAPI.class:?]
 						TwitchBadge badge = new TwitchBadge(ImageLoader.loadImage(new URI(badgeObject.get("image").getAsString()), channel.getName() + "_" + entry.getKey()), ITooltipProvider.EMPTY);
 						result.put(entry.getKey(), badge);
 					} catch (IOException | URISyntaxException e) {
