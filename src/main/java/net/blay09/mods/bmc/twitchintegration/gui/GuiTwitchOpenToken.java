@@ -16,6 +16,6 @@ public class GuiTwitchOpenToken extends GuiConfirmOpenLink {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		drawCenteredString(fontRenderer, TextFormatting.RED + "Please do not show your browser on stream during authorization.", width / 2, height / 2 + 50, 0xFFFFFFFF); // TODO i18n
+		drawCenteredString(fontRenderer, TextFormatting.RED + I18n.format("twitchintegration.gui.no_leak_pls"), width / 2, height / 2 + 50, 0xFFFFFFFF);
 	}
 }

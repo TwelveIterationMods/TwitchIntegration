@@ -1,12 +1,23 @@
 package net.blay09.mods.bmc.twitchintegration.handler;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.bmc.twitchintegration.util.TwitchAPI;
 import net.blay09.mods.chattweaks.ChatManager;
+import net.blay09.mods.chattweaks.balyware.CachedAPI;
 import net.blay09.mods.chattweaks.chat.ChatChannel;
+import net.blay09.mods.chattweaks.image.ITooltipProvider;
+import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
 import net.minecraft.util.ResourceLocation;
 
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.Map;
 
 public class TwitchChannel {
 
@@ -31,6 +42,7 @@ public class TwitchChannel {
 	private DeletedMessages deletedMessages = DeletedMessages.REPLACE;
 	private boolean active;
 	private int id = -1;
+	private Map<String, TwitchBadge> badges;
 
 	public TwitchChannel(String name) {
 		this.name = name;
@@ -96,5 +108,33 @@ public class TwitchChannel {
 		channel.deletedMessages = DeletedMessages.fromName(obj.get("deletedMessages").getAsString());
 		channel.active = obj.has("active") && obj.get("active").getAsBoolean();
 		return channel;
+	}
+
+	public boolean loadChannelId() {
+		if (id == -1) {
+			id = TwitchAPI.loadChannelId(name);
+			return id != -1;
+		}
+		return true;
+	}
+
+	public void loadChannelBadges() {
+		if (!loadChannelId()) {
+			return;
+		}
+		badges = TwitchAPI.loadChannelBadges(this);
+		badges.putAll(TwitchAPI.loadChannelSpecificBadges(this));
+	}
+
+	@Nullable
+	public TwitchBadge getBadge(String key, int version) {
+		if(badges == null) {
+			loadChannelBadges();
+		}
+		TwitchBadge badge = badges.get(key + "/" + version);
+		if(badge == null) {
+			badge = badges.get(key);
+		}
+		return badge;
 	}
 }

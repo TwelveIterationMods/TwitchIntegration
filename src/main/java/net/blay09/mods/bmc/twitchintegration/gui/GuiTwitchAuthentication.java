@@ -1,7 +1,7 @@
 package net.blay09.mods.bmc.twitchintegration.gui;
 
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
+import net.blay09.mods.bmc.twitchintegration.util.TwitchAPI;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.auth.TokenPair;
@@ -69,7 +69,7 @@ public class GuiTwitchAuthentication extends GuiScreen {
 			TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
 			if(tokenPair == null || !tokenPair.getToken().equals(txtToken.getText()) || tokenPair.getUsername() == null) {
 				mc.displayGuiScreen(new GuiTwitchWaitingForUsername());
-				TwitchHelper.requestUsername(txtToken.getText(), () -> TwitchIntegration.getTwitchManager().connect());
+				TwitchAPI.requestUsername(txtToken.getText(), () -> TwitchIntegration.getTwitchManager().connect());
 			} else {
 				mc.displayGuiScreen(null);
 				if(TwitchIntegration.getTwitchManager().isConnected()) {
@@ -91,7 +91,7 @@ public class GuiTwitchAuthentication extends GuiScreen {
 		if(result) {
 			if(id == 0) {
 				mc.displayGuiScreen(new GuiTwitchWaitingForToken());
-				TwitchHelper.listenForToken(() -> mc.displayGuiScreen(new GuiTwitchAuthentication(parentScreen)));
+				TwitchAPI.listenForToken(() -> mc.displayGuiScreen(new GuiTwitchAuthentication(parentScreen)));
 			}
 		}
 	}

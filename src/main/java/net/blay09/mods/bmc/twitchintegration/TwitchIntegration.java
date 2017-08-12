@@ -1,6 +1,5 @@
 package net.blay09.mods.bmc.twitchintegration;
 
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchBadge;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
 import net.minecraft.client.Minecraft;
@@ -22,6 +21,7 @@ guiFactory = "net.blay09.mods.bmc.twitchintegration.gui.GuiFactory")
 public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
+	// TODO it switched me to multi-channel mode, maybe because I re-connected?
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;
@@ -45,27 +45,7 @@ public class TwitchIntegration {
 	}
 
 	@Mod.EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
-		TwitchBadge.loadInbuiltBadge("broadcaster");
-		TwitchBadge.loadInbuiltBadge("moderator");
-		TwitchBadge.loadInbuiltBadge("turbo");
-		TwitchBadge.loadInbuiltBadge("staff");
-		TwitchBadge.loadInbuiltBadge("admin");
-		TwitchBadge.loadInbuiltBadge("global_mod");
-		TwitchBadge.loadInbuiltBadge("premium");
-		TwitchBadge.loadInbuiltBadge("verified");
-		TwitchBadge.loadInbuiltBadge("bits1");
-		TwitchBadge.loadInbuiltBadge("bits100");
-		TwitchBadge.loadInbuiltBadge("bits1000");
-		TwitchBadge.loadInbuiltBadge("bits5000");
-		TwitchBadge.loadInbuiltBadge("bits10000");
-		TwitchBadge.loadInbuiltBadge("bits25000");
-		TwitchBadge.loadInbuiltBadge("bits50000");
-		TwitchBadge.loadInbuiltBadge("bits75000");
-		for(int i = 100000; i <= 1000000; i += 100000) {
-			TwitchBadge.loadInbuiltBadge("bits" + i);
-		}
-	}
+	public void postInit(FMLPostInitializationEvent event) {}
 
 	@SubscribeEvent
 	public void onWorldJoined(FMLNetworkEvent.ClientConnectedToServerEvent event) {

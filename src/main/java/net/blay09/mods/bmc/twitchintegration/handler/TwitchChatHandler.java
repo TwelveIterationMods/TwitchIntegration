@@ -4,8 +4,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
@@ -14,11 +12,9 @@ import net.blay09.javatmi.TwitchUser;
 import net.blay09.javatmi.TwitchMessage;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.bmc.twitchintegration.util.TwitchHelper;
 import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.ChatViewManager;
-import net.blay09.mods.chattweaks.balyware.CachedAPI;
 import net.blay09.mods.chattweaks.chat.ChatChannel;
 import net.blay09.mods.chattweaks.chat.ChatMessage;
 import net.blay09.mods.chattweaks.chat.ChatView;
@@ -38,9 +34,9 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.ForgeHooks;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -76,7 +72,7 @@ public class TwitchChatHandler extends TMIAdapter {
 		}
 	}
 
-	private static final Pattern PATTERN_ARGUMENT = Pattern.compile("%[ucmr]");
+	private static final Pattern PATTERN_FORMAT = Pattern.compile("(?<=%[ucmr])|(?=%[ucmr])");
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("[HH:mm]");
 	private final TwitchManager twitchManager;
 
@@ -122,20 +118,6 @@ public class TwitchChatHandler extends TMIAdapter {
 			}
 
 			boolean isSelf = user.getNick().equals(client.getIRCConnection().getNick());
-
-			// If the channel id is not known yet (because this is the first message sent and it's from this client), poll the API instead
-			if (twitchChannel != null && twitchChannel.getId() == -1 && isSelf) {
-				JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/users?login=" + twitchChannel.getName() + "&client_id=" + TwitchHelper.OAUTH_CLIENT_ID, "twitch_" + twitchChannel.getName(), "application/vnd.twitchtv.v5+json");
-				if (object != null && object.has("users")) {
-					JsonArray array = object.getAsJsonArray("users");
-					if(array.size() > 0) {
-						JsonObject userObject = array.get(0).getAsJsonObject();
-						if(userObject.has("_id")) {
-							twitchChannel.setId(userObject.get("_id").getAsInt());
-						}
-					}
-				}
-			}
 
 			// Apply Twitch Emotes
 			tmpEmotes.clear();
@@ -191,26 +173,15 @@ public class TwitchChatHandler extends TMIAdapter {
 				}
 				user.setBadges(tmpBadgeNames.toArray(new String[tmpBadgeNames.size()]));
 			}
-			if (user.hasBadges()) {
+			if (twitchChannel != null && user.hasBadges()) {
 				for (String badgeName : user.getBadges()) {
 					int slash = badgeName.indexOf('/');
-					int slashVal = 0;
+					int version = 0;
 					if (slash != -1) {
-						slashVal = Integer.parseInt(badgeName.substring(slash + 1, badgeName.length()));
+						version = Integer.parseInt(badgeName.substring(slash + 1, badgeName.length()));
 						badgeName = badgeName.substring(0, slash);
 					}
-					TwitchBadge badge;
-					switch (badgeName) {
-						case "subscriber":
-							badge = TwitchBadge.getSubscriberBadge(twitchChannel, slashVal);
-							break;
-						case "bits":
-							badge = TwitchBadge.getBadge(badgeName + slashVal);
-							break;
-						default:
-							badge = TwitchBadge.getBadge(badgeName);
-							break;
-					}
+					TwitchBadge badge = twitchChannel.getBadge(badgeName, version);
 					if (badge != null) {
 						ChatImage image = new ChatImageDefault(badgeIndex, badge.getChatRenderable(), badge.getTooltipProvider());
 						badgeIndex += image.getSpaces();
@@ -222,7 +193,7 @@ public class TwitchChatHandler extends TMIAdapter {
 			ChatChannel targetChannel = twitchChannel != null ? twitchChannel.getChatChannel() : null;
 
 			// Format Message
-			ITextComponent textComponent = formatComponent(format, channel, user, message, tmpBadges, tmpEmotes, null, twitchMessage.isAction()); // TODO ensure chatters can't §fuckshitup
+			ITextComponent textComponent = formatComponent(format, channel, user, message, tmpBadges, tmpEmotes, null, twitchMessage.isAction());
 			ChatMessage chatMessage = ChatTweaks.createChatMessage(textComponent);
 			chatMessage.setManaged(true);
 			chatMessage.withRGB(twitchMessage.isAction() ? 2 : 1);
@@ -234,14 +205,14 @@ public class TwitchChatHandler extends TMIAdapter {
 			}
 			if (user.hasColor()) {
 				int nameColor = ChatTweaks.colorFromHex(user.getColor());
-				chatMessage.setRGBColor(0, nameColor);
+				chatMessage.setRGBColor(0, getAcceptableNameColor(nameColor));
 			} else {
 				chatMessage.setRGBColor(0, 0x808080);
 			}
 			if (twitchMessage.isAction()) {
 				if (user.hasColor()) {
 					int nameColor = ChatTweaks.colorFromHex(user.getColor());
-					chatMessage.setRGBColor(1, nameColor);
+					chatMessage.setRGBColor(1, getAcceptableNameColor(nameColor));
 				} else {
 					chatMessage.setRGBColor(1, 0x808080);
 				}
@@ -341,20 +312,20 @@ public class TwitchChatHandler extends TMIAdapter {
 				}
 				if (user.hasColor()) {
 					int nameColor = ChatTweaks.colorFromHex(user.getColor());
-					chatMessage.setRGBColor(0, nameColor);
+					chatMessage.setRGBColor(0, getAcceptableNameColor(nameColor));
 				} else {
 					chatMessage.setRGBColor(0, 0x808080);
 				}
 				if (receiver.hasColor()) { // TODO this assumes that receiver is always in second place, which makes sense but isn't perfect
 					int nameColor = ChatTweaks.colorFromHex(receiver.getColor());
-					chatMessage.setRGBColor(1, nameColor);
+					chatMessage.setRGBColor(1, getAcceptableNameColor(nameColor));
 				} else {
 					chatMessage.setRGBColor(1, 0x808080);
 				}
 				if (isAction) { // TODO this assumes that message is always in third place, which makes sense but isn't perfect
 					if (user.hasColor()) {
 						int nameColor = ChatTweaks.colorFromHex(user.getColor());
-						chatMessage.setRGBColor(2, nameColor);
+						chatMessage.setRGBColor(2, getAcceptableNameColor(nameColor));
 					} else {
 						chatMessage.setRGBColor(2, 0x808080);
 					}
@@ -372,7 +343,7 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	@Override
-	public void onTimeout(TMIClient client, final String channel, final String username) { // TODO test me
+	public void onTimeout(TMIClient client, final String channel, final String username) {
 		Minecraft.getMinecraft().addScheduledTask(() -> {
 			TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 			if (twitchChannel != null) {
@@ -428,7 +399,7 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	public static ITextComponent formatComponent(String format, @Nullable String channel, TwitchUser user, String message, @Nullable List<ChatImage> nameBadges, @Nullable List<ChatImage> emotes, @Nullable TwitchUser whisperReceiver, boolean isAction) {
-		String[] parts = format.split("(?<=" + PATTERN_ARGUMENT + ")|(?=" + PATTERN_ARGUMENT + ")"); // TODO cache this
+		String[] parts = PATTERN_FORMAT.split(format);
 		TextComponentString root = null;
 		for(String key : parts) {
 			if(key.charAt(0) == '%') {
@@ -497,5 +468,18 @@ public class TwitchChatHandler extends TMIAdapter {
 
 	public TwitchUser getUser(String username) {
 		return users.computeIfAbsent(username.toLowerCase(), k -> new TwitchUser(new IRCUser(username, null, null)));
+	}
+
+	private final float[] tmpHSB = new float[3];
+	public int getAcceptableNameColor(int color) {
+		int red = (color >> 16 & 255);
+		int green = (color >> 8 & 255);
+		int blue = (color & 255);
+		Color.RGBtoHSB(red, green, blue, tmpHSB);
+		float brightness = tmpHSB[2];
+		if(brightness < 0.4f) {
+			brightness = 0.4f;
+		}
+		return Color.HSBtoRGB(tmpHSB[0], tmpHSB[1], brightness);
 	}
 }
