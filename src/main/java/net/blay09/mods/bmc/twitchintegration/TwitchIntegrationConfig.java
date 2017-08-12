@@ -26,10 +26,8 @@ public class TwitchIntegrationConfig {
 
 	public static class Format {
 		public static String singleMessageFormat = "%u: %m";
-		public static String multiMessageFormat = "[%c] %u: %m";
-		public static String whisperMessageFormat = "%u \u25b6 %r: %m";
 		public static String singleActionFormat = "%u %m";
-		public static String multiActionFormat = "[%c] %u %m";
+		public static String whisperMessageFormat = "%u \u25b6 %r: %m";
 		public static String whisperActionFormat = "%u \u25b6 %r : %m";
 	}
 

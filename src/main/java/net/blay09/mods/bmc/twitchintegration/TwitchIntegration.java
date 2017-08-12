@@ -1,7 +1,10 @@
 package net.blay09.mods.bmc.twitchintegration;
 
+import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.BTTVChannelEmotes;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.FFZChannelEmotes;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -24,7 +27,6 @@ guiFactory = "net.blay09.mods.bmc.twitchintegration.gui.GuiFactory")
 public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
-	// TODO Channel configuration
 	// TODO Edit Message Format is empty
 
 	@Mod.Instance(MOD_ID)
@@ -71,5 +73,21 @@ public class TwitchIntegration {
 
 	public static TwitchManager getTwitchManager() {
 		return instance.twitchManager;
+	}
+
+	// Let's just put this here for now...
+	public static void loadChannelEmotes(TwitchChannel channel) {
+		new Thread(() -> {
+			try {
+				new BTTVChannelEmotes(channel.getName());
+			} catch (Exception e) {
+				TwitchIntegration.logger.error("Failed to load BTTV channel emotes: ", e);
+			}
+			try {
+				new FFZChannelEmotes(channel.getName());
+			} catch (Exception e) {
+				TwitchIntegration.logger.error("Failed to load FFZ channel emotes: ", e);
+			}
+		}).start();
 	}
 }

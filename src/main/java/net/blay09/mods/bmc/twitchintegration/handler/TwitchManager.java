@@ -13,11 +13,7 @@ import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
-import net.blay09.mods.chattweaks.ChatViewManager;
 import net.blay09.mods.chattweaks.auth.TokenPair;
-import net.blay09.mods.chattweaks.chat.ChatView;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.BTTVChannelEmotes;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.FFZChannelEmotes;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -37,7 +33,7 @@ public class TwitchManager {
 
 	private final File configFile;
 	private final Map<String, TwitchChannel> channels = Maps.newHashMap();
-	private final List<TwitchChannel> activeChannels = Lists.newArrayList(); // TODO check this
+	private final List<TwitchChannel> activeChannels = Lists.newArrayList();
 	private TMIClient twitchClient;
 
 	public TwitchManager(File configFile) {
@@ -47,19 +43,7 @@ public class TwitchManager {
 
 	public void addChannel(TwitchChannel channel) {
 		channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
-		// TODO this could be cleaned up, it shouldn't be here:
-		new Thread(() -> {
-			try {
-				new BTTVChannelEmotes(channel.getName());
-			} catch (Exception e) {
-				TwitchIntegration.logger.error("Failed to load BTTV channel emotes: ", e);
-			}
-			try {
-				new FFZChannelEmotes(channel.getName());
-			} catch (Exception e) {
-				TwitchIntegration.logger.error("Failed to load FFZ channel emotes: ", e);
-			}
-		}).start();
+		TwitchIntegration.loadChannelEmotes(channel);
 	}
 
 	public Collection<TwitchChannel> getChannels() {
@@ -81,11 +65,7 @@ public class TwitchManager {
 				channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
 				saveChannels();
 
-				// TODO extract this into a method so we can use it in config gui
-				ChatView twitchView = new ChatView(channel.getName());
-				twitchView.setOutgoingPrefix("/twitch #" + channel.getName().toLowerCase(Locale.ENGLISH) + " ");
-				ChatViewManager.addChatView(twitchView);
-				ChatViewManager.save();
+				channel.createDefaultView();
 			}
 		}
 
@@ -115,11 +95,6 @@ public class TwitchManager {
 
 	public boolean isConnected() {
 		return twitchClient != null && twitchClient.getIRCConnection().isConnected();
-	}
-
-	@Deprecated // TODO this should be replaced by a variable in the output format, normally people will have their own view for a channel
-	public boolean isMultiMode() {
-		return activeChannels.size() > 1;
 	}
 
 	public void updateChannelStates() {

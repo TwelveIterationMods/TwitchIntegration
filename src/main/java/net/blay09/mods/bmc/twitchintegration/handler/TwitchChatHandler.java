@@ -4,7 +4,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import gnu.trove.list.array.TIntArrayList;
 import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
@@ -102,7 +101,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
 	@Override
 	public void onChatMessage(TMIClient client, String channel, TwitchUser user, TwitchMessage message) {
-		onTwitchChat(client, twitchManager.isMultiMode() ? TwitchIntegrationConfig.Format.multiMessageFormat : TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, message);
+		onTwitchChat(client, TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, message);
 	}
 
 	public void onTwitchChat(final TMIClient client, final String format, final String channel, final TwitchUser user, final TwitchMessage twitchMessage) {
@@ -197,6 +196,8 @@ public class TwitchChatHandler extends TMIAdapter {
 			// Format Message
 			ITextComponent textComponent = formatComponent(format, channel, user, message, tmpBadges, tmpEmotes, null, twitchMessage.isAction());
 			ChatMessage chatMessage = ChatTweaks.createChatMessage(textComponent);
+			chatMessage.setSender(user.getDisplayName());
+			chatMessage.setMessage(message);
 			chatMessage.setManaged(true);
 			chatMessage.withRGB(twitchMessage.isAction() ? 2 : 1);
 			for (ChatImage chatImage : tmpBadges) {
@@ -230,11 +231,7 @@ public class TwitchChatHandler extends TMIAdapter {
 	public void onSubscribe(TMIClient client, final String channel, final String username, final boolean prime) {
 		Minecraft.getMinecraft().addScheduledTask(() -> {
 			TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
-			if (twitchManager.isMultiMode()) {
-				ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + (prime ? ":chat.subscribePrimeMulti": ":chat.subscribeMulti"), channel, username), twitchChannel != null ? twitchChannel.getChatChannel() : null);
-			} else {
-				ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + (prime ? ":chat.subscribePrime": ":chat.subscribe"), username), twitchChannel != null ? twitchChannel.getChatChannel() : null);
-			}
+			ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + (prime ? ":chat.subscribePrime" : ":chat.subscribe"), username), twitchChannel != null ? twitchChannel.getChatChannel() : null);
 		});
 	}
 
@@ -242,14 +239,11 @@ public class TwitchChatHandler extends TMIAdapter {
 	public void onResubscribe(TMIClient client, final String channel, final TwitchUser user, final int months, String message) {
 		Minecraft.getMinecraft().addScheduledTask(() -> {
 			TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
-			if (twitchManager.isMultiMode()) {
-				ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribeMulti", channel, user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getChatChannel() : null);
-			} else {
-				ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribe", user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getChatChannel() : null);
-			}
+			ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribe", user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getChatChannel() : null);
 		});
-		if (message != null)
-			onTwitchChat(client, twitchManager.isMultiMode()? TwitchIntegrationConfig.Format.multiMessageFormat : TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, new TwitchMessage(message, -1, false, 0));
+		if (message != null) {
+			onTwitchChat(client, TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, new TwitchMessage(message, -1, false, 0));
+		}
 	}
 
 	@Override
@@ -368,7 +362,7 @@ public class TwitchChatHandler extends TMIAdapter {
 							user = new TwitchUser(new IRCUser(username, null, null));
 						}
 						for (ChatMessage message : messages.get(new ChannelUser(channel, username))) {
-							ITextComponent removedComponent = formatComponent(twitchManager.isMultiMode() ? TwitchIntegrationConfig.Format.multiMessageFormat : TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, TextFormatting.GRAY + "<message deleted>", null, null, null, false);
+							ITextComponent removedComponent = formatComponent(TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, TextFormatting.GRAY + "<message deleted>", null, null, null, false);
 							message.setTextComponent(removedComponent);
 							message.clearImages();
 						}
@@ -393,32 +387,33 @@ public class TwitchChatHandler extends TMIAdapter {
 	public void onUnhandledException(TMIClient client, final Exception e) {
 		TwitchIntegration.logger.error("Unhandled exception: ", e);
 		Minecraft.getMinecraft().addScheduledTask(() -> {
-			if(Minecraft.getMinecraft().player != null) {
+			if (Minecraft.getMinecraft().player != null) {
 				Minecraft.getMinecraft().player.sendStatusMessage(new TextComponentString(TextFormatting.RED + "Twitch Integration encountered an unhandled exception. The connection has been terminated. Please review your log files and let the mod developer know."), false);
 			}
 		});
 		twitchManager.disconnect();
 	}
 
+	@Deprecated // TODO this can be entirely handled by the output format, I think?
 	public static ITextComponent formatComponent(String format, @Nullable String channel, TwitchUser user, String message, @Nullable List<ChatImage> nameBadges, @Nullable List<ChatImage> emotes, @Nullable TwitchUser whisperReceiver, boolean isAction) {
 		String[] parts = PATTERN_FORMAT.split(format);
 		TextComponentString root = null;
-		for(String key : parts) {
-			if(key.charAt(0) == '%') {
-				if(root == null) {
+		for (String key : parts) {
+			if (key.charAt(0) == '%') {
+				if (root == null) {
 					root = new TextComponentString("");
 				}
-				switch(key.charAt(1)) {
+				switch (key.charAt(1)) {
 					case 'c':
 						root.appendText(channel != null ? channel : "%c");
 						break;
 					case 'u':
 						StringBuilder sb = new StringBuilder();
-						if(nameBadges != null) {
+						if (nameBadges != null) {
 							for (ChatImage chatImage : nameBadges) {
 								chatImage.setIndex(chatImage.getIndex() + root.getFormattedText().length());
 								sb.append("§*");
-								for(int i = 0; i < chatImage.getSpaces(); i++) {
+								for (int i = 0; i < chatImage.getSpaces(); i++) {
 									sb.append(' ');
 								}
 							}
@@ -427,7 +422,7 @@ public class TwitchChatHandler extends TMIAdapter {
 						root.appendSibling(userComponent);
 						break;
 					case 'r':
-						if(whisperReceiver != null) {
+						if (whisperReceiver != null) {
 							ITextComponent receiverComponent = new TextComponentString(ChatTweaks.TEXT_FORMATTING_RGB + whisperReceiver.getDisplayName() + ChatTweaks.TEXT_FORMATTING_RGB);
 							root.appendSibling(receiverComponent);
 						} else {
@@ -435,7 +430,7 @@ public class TwitchChatHandler extends TMIAdapter {
 						}
 						break;
 					case 'm':
-						if(emotes != null) {
+						if (emotes != null) {
 							for (ChatImage chatImage : emotes) {
 								chatImage.setIndex(chatImage.getIndex() + root.getFormattedText().length());
 							}
@@ -445,24 +440,25 @@ public class TwitchChatHandler extends TMIAdapter {
 						break;
 				}
 			} else {
-				if(root == null) {
+				if (root == null) {
 					root = new TextComponentString(key);
 				} else {
 					root.appendSibling(new TextComponentString(key));
 				}
 			}
 		}
-		if(root == null) {
+		if (root == null) {
 			root = new TextComponentString(format);
 		}
 		return root;
 	}
 
 	public TwitchUser getThisUser(TMIClient client, String channel) {
-		if (channel == null)
-			channel = !thisUsers.isEmpty() ? thisUsers.keySet().iterator().next(): "";
+		if (channel == null) {
+			channel = !thisUsers.isEmpty() ? thisUsers.keySet().iterator().next() : "";
+		}
 
-		if(!thisUsers.containsKey(channel)) {
+		if (!thisUsers.containsKey(channel)) {
 			thisUsers.put(channel, new TwitchUser(new IRCUser(client.getIRCConnection().getNick(), null, null)));
 		}
 		return thisUsers.get(channel);
@@ -473,13 +469,14 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	private final float[] tmpHSB = new float[3];
+
 	public int getAcceptableNameColor(int color) {
 		int red = (color >> 16 & 255);
 		int green = (color >> 8 & 255);
 		int blue = (color & 255);
 		Color.RGBtoHSB(red, green, blue, tmpHSB);
 		float brightness = tmpHSB[2];
-		if(brightness < 0.4f) {
+		if (brightness < 0.4f) {
 			brightness = 0.4f;
 		}
 		return Color.HSBtoRGB(tmpHSB[0], tmpHSB[1], brightness);
