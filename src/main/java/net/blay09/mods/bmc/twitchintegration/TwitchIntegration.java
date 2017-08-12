@@ -21,7 +21,6 @@ guiFactory = "net.blay09.mods.bmc.twitchintegration.gui.GuiFactory")
 public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
-	// TODO it switched me to multi-channel mode, maybe because I re-connected?
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;

@@ -22,7 +22,7 @@ import net.blay09.mods.chattweaks.chat.emotes.EmoteScanner;
 import net.blay09.mods.chattweaks.chat.emotes.IEmote;
 import net.blay09.mods.chattweaks.chat.emotes.IEmoteScanner;
 import net.blay09.mods.chattweaks.chat.emotes.PositionedEmote;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchAPI;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchEmotesAPI;
 import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchGlobalEmotes;
 import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchSubscriberEmotes;
 import net.blay09.mods.chattweaks.image.ChatImage;
@@ -124,7 +124,7 @@ public class TwitchChatHandler extends TMIAdapter {
 			List<PositionedEmote> emoteList = (isSelf && !user.hasEmotes()) ? emoteScanner.scanForEmotes(twitchMessage.getMessage(), null) : emoteScanner.scanForEmotes(twitchMessage.getMessage(), noTwitchEmotes);
 			if (user.hasEmotes()) {
 				for (TwitchEmote twitchEmote : user.getEmotes()) {
-					IEmote emote = TwitchAPI.getEmoteById(twitchEmote.getId());
+					IEmote emote = TwitchEmotesAPI.getEmoteById(twitchEmote.getId());
 					if (emote != null) {
 						emoteList.add(new PositionedEmote(emote, twitchEmote.getStart(), twitchEmote.getEnd()));
 					}
@@ -265,7 +265,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				List<PositionedEmote> emoteList = (isSelf && !user.hasEmotes()) ? emoteScanner.scanForEmotes(message, null) : emoteScanner.scanForEmotes(message, noTwitchEmotes);
 				if (user.hasEmotes()) {
 					for (TwitchEmote twitchEmote : user.getEmotes()) {
-						IEmote emote = TwitchAPI.getEmoteById(twitchEmote.getId());
+						IEmote emote = TwitchEmotesAPI.getEmoteById(twitchEmote.getId());
 						if (emote != null) {
 							emoteList.add(new PositionedEmote(emote, twitchEmote.getStart(), twitchEmote.getEnd()));
 						}

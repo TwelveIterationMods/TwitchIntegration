@@ -102,6 +102,7 @@ public class TwitchManager {
 	public void disconnect() {
 		if(twitchClient != null) {
 			twitchClient.disconnect();
+			activeChannels.clear();
 			twitchClient = null;
 		}
 	}

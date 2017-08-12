@@ -83,7 +83,7 @@ public class TwitchAPI {
 	public static Map<String, TwitchBadge> loadChannelSpecificBadges(TwitchChannel channel) {
 		Map<String, TwitchBadge> result = Maps.newHashMap();
 		try {
-			JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/chat/" + channel.getId() + "/badges?client_id=" + net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchAPI.CLIENT_ID, "twitch_" + channel.getName() + "_badges", "application/vnd.twitchtv.v5+json");
+			JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/chat/" + channel.getId() + "/badges?client_id=" + CLIENT_ID, "twitch_" + channel.getName() + "_badges", "application/vnd.twitchtv.v5+json");
 			if (object != null) {
 				for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
 					if (entry.getValue().isJsonNull()) {
