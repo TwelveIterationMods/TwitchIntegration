@@ -11,6 +11,9 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -43,6 +46,12 @@ public class CommandTwitch extends CommandBase {
 		TMIClient twitchClient = TwitchIntegration.getTwitchManager().getClient();
 		TwitchChatHandler twitchChatHandler = TwitchIntegration.getTwitchChatHandler();
 		if(twitchClient != null) {
+			if(TwitchIntegrationConfig.useAnonymousLogin || twitchClient.getIRCConnection().getNick().startsWith("justinfan")) {
+				ITextComponent component = new TextComponentString("You can not send messages in anonymous mode.");
+				component.getStyle().setColor(TextFormatting.RED);
+				sender.sendMessage(component);
+				return;
+			}
 			if(args[0].startsWith("#")) {
 				twitchClient.send(args[0], message);
 				if(message.startsWith("/me ")) {

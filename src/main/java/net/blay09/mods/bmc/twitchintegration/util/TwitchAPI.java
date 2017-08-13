@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.bmc.twitchintegration.gui.GuiTwitchWaitingForUsername;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchBadge;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
@@ -138,10 +139,11 @@ public class TwitchAPI {
 						Gson gson = new Gson();
 						JsonObject root = gson.fromJson(reader, JsonObject.class);
 						String username = root.getAsJsonObject("token").get("user_name").getAsString();
-						ChatTweaks.getAuthManager().storeToken(TwitchIntegration.MOD_ID, username, token);
+						ChatTweaks.getAuthManager().storeToken(TwitchIntegration.MOD_ID, username, token, TwitchIntegrationConfig.doNotStoreToken);
 						Minecraft.getMinecraft().addScheduledTask(callback);
 					} catch (Exception e) {
-						TwitchIntegration.logger.error("Failed to retrieve your username from the Twitch token. Please try again.", e);					}
+						TwitchIntegration.logger.error("Failed to retrieve your username from the Twitch token. Please try again.", e);
+					}
 				}
 			} catch (IOException e) {
 				TwitchIntegration.logger.error("Failed to retrieve your username from the token. Please try again.", e);

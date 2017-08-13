@@ -31,15 +31,17 @@ import java.util.List;
 
 public class GuiTwitchChannel extends GuiConfig {
 
+	private final boolean isNew;
 	private final TwitchChannel twitchChannel;
 	private static SmartyConfigElement nameElement;
 	private static SmartyConfigElement subscribersOnlyElement;
 	private static SmartyConfigElement deletedMessagesElement;
 	private static SmartyConfigElement activeElement;
 
-	public GuiTwitchChannel(GuiScreen parentScreen, TwitchChannel twitchChannel) {
+	public GuiTwitchChannel(GuiScreen parentScreen, TwitchChannel twitchChannel, boolean isNew) {
 		super(parentScreen, getConfigElements(twitchChannel), ChatTweaks.MOD_ID, "config", false, false, "Twitch Channel Configuration");
 		this.twitchChannel = twitchChannel;
+		this.isNew = isNew;
 	}
 
 	@Override
@@ -56,7 +58,13 @@ public class GuiTwitchChannel extends GuiConfig {
 
 			TwitchIntegration.getTwitchManager().saveChannels();
 
-			// TODO automatically create view for new channels
+			ChatView chatView = ChatViewManager.getChatView(twitchChannel.getName());
+			if(isNew && chatView == null) {
+				chatView = new ChatView(twitchChannel.getName());
+				chatView.addChannel(twitchChannel.getChatChannel());
+				chatView.setOutgoingPrefix("/twitch " + twitchChannel.getName() + " ");
+				ChatViewManager.addChatView(chatView);
+			}
 
 			mc.displayGuiScreen(parentScreen);
 			return;

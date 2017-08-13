@@ -13,7 +13,9 @@ import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
 import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
+import net.blay09.mods.chattweaks.ChatViewManager;
 import net.blay09.mods.chattweaks.auth.TokenPair;
+import net.blay09.mods.chattweaks.chat.ChatView;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -60,7 +62,7 @@ public class TwitchManager {
 
 		if (tokenPair != null && !channels.containsKey(tokenPair.getUsername().toLowerCase(Locale.ENGLISH))) {
 			TwitchChannel[] defaultChannels = createDefaults();
-			if(defaultChannels.length > 0) {
+			if (defaultChannels.length > 0) {
 				TwitchChannel channel = defaultChannels[0];
 				channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
 				saveChannels();
@@ -69,10 +71,14 @@ public class TwitchManager {
 			}
 		}
 
-		// TODO anon login
-		if (tokenPair != null) {
-			String token = tokenPair.getToken().startsWith("oauth:") ? tokenPair.getToken() : "oauth:" + tokenPair.getToken();
-			IRCConfiguration.IRCConfigurationBuilder builder = TMIClient.defaultBuilder().debug(true).nick(tokenPair.getUsername()).password(token);
+		if(tokenPair != null || TwitchIntegrationConfig.useAnonymousLogin) {
+			IRCConfiguration.IRCConfigurationBuilder builder = TMIClient.defaultBuilder().debug(false);
+			if (tokenPair != null && !TwitchIntegrationConfig.useAnonymousLogin) {
+				String token = tokenPair.getToken().startsWith("oauth:") ? tokenPair.getToken() : "oauth:" + tokenPair.getToken();
+				builder.nick(tokenPair.getUsername()).password(token);
+			} else {
+				builder.nick(getAnonymousUsername());
+			}
 			builder.port(TwitchIntegrationConfig.port);
 			for (TwitchChannel channel : channels.values()) {
 				if (channel.isActive()) {
@@ -83,6 +89,10 @@ public class TwitchManager {
 			twitchClient = new TMIClient(builder.build(), TwitchIntegration.getTwitchChatHandler());
 			twitchClient.connect();
 		}
+	}
+
+	private static String getAnonymousUsername() {
+		return "justinfan" + (int) (Math.floor(Math.random() * 80000.0D + 1000.0D));
 	}
 
 	public void disconnect() {
@@ -98,7 +108,22 @@ public class TwitchManager {
 	}
 
 	public void updateChannelStates() {
+		// Leave channels if they were removed
+		for (TwitchChannel channel : activeChannels) {
+			if (!channels.containsKey(channel.getName())) {
+				ChatView chatView = ChatViewManager.getChatView(channel.getName());
+				if (chatView != null && chatView.getChannels().size() == 1 && chatView.getChannels().contains(channel.getChatChannel())) {
+					ChatViewManager.removeChatView(chatView);
+					ChatViewManager.save();
+				}
+				if (twitchClient != null) {
+					twitchClient.part("#" + channel.getName().toLowerCase(Locale.ENGLISH));
+				}
+			}
+		}
+
 		activeChannels.clear();
+
 		for (TwitchChannel channel : channels.values()) {
 			if (channel.isActive()) {
 				activeChannels.add(channel);
@@ -172,7 +197,6 @@ public class TwitchManager {
 
 	public void removeAllChannels() {
 		channels.clear();
-		activeChannels.clear();
 	}
 
 	public void renameTwitchChannel(TwitchChannel twitchChannel, String newName) {

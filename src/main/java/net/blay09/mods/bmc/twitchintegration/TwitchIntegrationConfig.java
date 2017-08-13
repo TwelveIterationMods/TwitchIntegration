@@ -7,6 +7,7 @@ import net.minecraftforge.common.config.Config;
 public class TwitchIntegrationConfig {
 
 	@Config.Name("Use Anonymous Login")
+	@Config.Comment("If you login anonymously you can read chat, but you will not be able to type to Twitch chat from within Minecraft.")
 	public static boolean useAnonymousLogin = false;
 
 	@Config.Name("Show Whispers")
@@ -21,4 +22,7 @@ public class TwitchIntegrationConfig {
 	@Config.Name("Disable Name Badges")
 	public static boolean disableNameBadges = false;
 
+	@Config.Name("Do not store token")
+	@Config.Comment("Set this if you're on a public computer or concerned about security. You will have to re-authenticate every time you start Minecraft.")
+	public static boolean doNotStoreToken = false;
 }

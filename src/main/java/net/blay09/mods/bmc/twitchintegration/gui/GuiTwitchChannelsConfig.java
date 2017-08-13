@@ -81,7 +81,7 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 			// Open the newly created entry immediately
 			TwitchChannelArrayEntry entry = (TwitchChannelArrayEntry) listEntries.get(index);
 			if(entry.twitchChannel != null) {
-				mc.displayGuiScreen(new GuiTwitchChannel(owningGui, entry.twitchChannel));
+				mc.displayGuiScreen(new GuiTwitchChannel(owningGui, entry.twitchChannel, true));
 			}
 		}
 
@@ -138,6 +138,7 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 				TwitchIntegration.getTwitchManager().addChannel((TwitchChannel) twitchChannel);
 			}
 			TwitchIntegration.getTwitchManager().updateChannelStates();
+			TwitchIntegration.getTwitchManager().saveChannels();
 			return super.saveConfigElement();
 		}
 	}
@@ -167,8 +168,6 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
 			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected);
 
-			btnRemoveEntry.enabled = owningEntryList.listEntries.size() > 2;
-
 			button.xPosition = listWidth / 4 + 12;
 			button.yPosition = y;
 
@@ -189,7 +188,7 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 			if (button.mousePressed(owningEntryList.getMC(), x, y)) {
 				button.playPressSound(owningEntryList.getMC().getSoundHandler());
 				((GuiTwitchChannelsConfig) owningScreen).saveAndUpdateList();
-				owningScreen.mc.displayGuiScreen(new GuiTwitchChannel(owningScreen, twitchChannel));
+				owningScreen.mc.displayGuiScreen(new GuiTwitchChannel(owningScreen, twitchChannel, false));
 				return true;
 			}
 

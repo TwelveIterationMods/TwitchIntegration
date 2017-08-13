@@ -3,6 +3,9 @@ package net.blay09.mods.bmc.twitchintegration;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
+import net.blay09.mods.chattweaks.ChatTweaks;
+import net.blay09.mods.chattweaks.auth.AuthManager;
+import net.blay09.mods.chattweaks.auth.TokenPair;
 import net.blay09.mods.chattweaks.chat.emotes.twitch.BTTVChannelEmotes;
 import net.blay09.mods.chattweaks.chat.emotes.twitch.FFZChannelEmotes;
 import net.minecraft.client.Minecraft;
@@ -27,10 +30,6 @@ guiFactory = "net.blay09.mods.bmc.twitchintegration.gui.GuiFactory")
 public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
-	// TODO also delete the Twitch view if it is managed by twitch channel
-	// TODO disable debug mode for TMI
-	// TODO delete doesn't seem to save
-	// TODO test whispers
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;
@@ -67,6 +66,13 @@ public class TwitchIntegration {
 	public void onConfigChanged(ConfigChangedEvent event) {
 		if(MOD_ID.equals(event.getModID())) {
 			ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
+
+			if(TwitchIntegrationConfig.doNotStoreToken) {
+				TokenPair token = ChatTweaks.getAuthManager().getToken(MOD_ID);
+				if(token != null) {
+					ChatTweaks.getAuthManager().storeToken(MOD_ID, token.getUsername(), token.getToken(), true);
+				}
+			}
 		}
 	}
 

@@ -12,6 +12,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 
 import javax.annotation.Nullable;
@@ -47,13 +49,15 @@ public class GuiTwitchAuthentication extends GuiScreen {
 
 		GuiCheckBox chkAnonymous = new GuiCheckBox(2, width / 2 - 100, height / 2 + 45, I18n.format(TwitchIntegration.MOD_ID + ":gui.authentication.anonymousLogin"), TwitchIntegrationConfig.useAnonymousLogin) {
 			@Override
-			public void setIsChecked(boolean isChecked) {
-				super.setIsChecked(isChecked);
-				txtToken.setEnabled(isChecked);
-				TwitchIntegrationConfig.useAnonymousLogin = isChecked;
+			public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+				if(super.mousePressed(mc, mouseX, mouseY)) {
+					txtToken.setEnabled(isChecked());
+					TwitchIntegrationConfig.useAnonymousLogin = isChecked();
+					return true;
+				}
+				return false;
 			}
 		};
-		chkAnonymous.enabled = false;
 		buttonList.add(chkAnonymous);
 
 		btnConnect = new GuiButton(3, width / 2, height / 2 + 65, 100, 20, I18n.format(TwitchIntegration.MOD_ID + ":gui.authentication.connect"));
@@ -67,16 +71,16 @@ public class GuiTwitchAuthentication extends GuiScreen {
 	public void actionPerformed(@Nullable GuiButton button) throws IOException {
 		if(button == btnConnect) {
 			TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
-			if(tokenPair == null || !tokenPair.getToken().equals(txtToken.getText()) || tokenPair.getUsername() == null) {
+			if(!TwitchIntegrationConfig.useAnonymousLogin && (tokenPair == null || !tokenPair.getToken().equals(txtToken.getText()) || tokenPair.getUsername() == null)) {
 				mc.displayGuiScreen(new GuiTwitchWaitingForUsername());
 				TwitchAPI.requestUsername(txtToken.getText(), () -> TwitchIntegration.getTwitchManager().connect());
 			} else {
-				mc.displayGuiScreen(null);
 				if(TwitchIntegration.getTwitchManager().isConnected()) {
 					TwitchIntegration.getTwitchManager().disconnect();
 				} else {
 					TwitchIntegration.getTwitchManager().connect();
 				}
+				mc.displayGuiScreen(parentScreen);
 			}
 		} else if(button == btnGetToken) {
 			mc.displayGuiScreen(new GuiTwitchOpenToken(this, 0));

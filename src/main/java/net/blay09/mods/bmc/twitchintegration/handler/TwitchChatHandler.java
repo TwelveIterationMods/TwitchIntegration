@@ -139,7 +139,7 @@ public class TwitchChatHandler extends TMIAdapter {
 					sb.append(twitchMessage.getMessage().substring(index, emoteData.getStart())).append(' '); // This space is definitely not a dirty hack, don't worry
 				}
 				int imageIndex = sb.length() + 1;
-				sb.append("§*");
+				sb.append(ChatTweaks.TEXT_FORMATTING_EMOTE);
 				for (int i = 0; i < emoteData.getEmote().getWidthInSpaces(); i++) {
 					sb.append(' ');
 				}
@@ -277,7 +277,7 @@ public class TwitchChatHandler extends TMIAdapter {
 						sb.append(message.substring(index, emoteData.getStart()));
 					}
 					int imageIndex = sb.length() + 1;
-					sb.append("§*");
+					sb.append(ChatTweaks.TEXT_FORMATTING_EMOTE);
 					for (int i = 0; i < emoteData.getEmote().getWidthInSpaces(); i++) {
 						sb.append(' ');
 					}
@@ -303,7 +303,7 @@ public class TwitchChatHandler extends TMIAdapter {
 				chatMessage.setSender(senderComponent);
 				chatMessage.setMessage(messageComponent);
 				chatMessage.setOutputVar("r", formatSenderComponent(receiver, null));
-				chatMessage.withRGB(isAction ? 3 : 2);
+				chatMessage.withRGB(isAction ? 2 : 1);
 				for (ChatImage chatImage : tmpEmotes) {
 					chatMessage.addImage(chatImage);
 				}
@@ -313,25 +313,23 @@ public class TwitchChatHandler extends TMIAdapter {
 				} else {
 					chatMessage.setRGBColor(0, 0x808080);
 				}
-				if (receiver.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
-					int nameColor = ChatTweaks.colorFromHex(receiver.getColor());
-					chatMessage.setRGBColor(1, getAcceptableNameColor(nameColor));
-				} else {
-					chatMessage.setRGBColor(1, 0x808080);
-				}
 				if (isAction) {
 					if (user.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
 						int nameColor = ChatTweaks.colorFromHex(user.getColor());
-						chatMessage.setRGBColor(2, getAcceptableNameColor(nameColor));
+						chatMessage.setRGBColor(1, getAcceptableNameColor(nameColor));
 					} else {
-						chatMessage.setRGBColor(2, 0x808080);
+						chatMessage.setRGBColor(1, 0x808080);
 					}
 				}
 
-				ChatView whisperView = ChatViewManager.getOrCreateChatView(whisperChannel.getName());
-				whisperView.addChannel(whisperChannel);
-				whisperView.setOutgoingPrefix("/twitch " + (isSelf ? receiver.getNick().toLowerCase(Locale.ENGLISH) : user.getNick().toLowerCase(Locale.ENGLISH)) + " ");
-				whisperView.setTemporary(true);
+				ChatView whisperView = ChatViewManager.getChatView(whisperChannel.getName());
+				if(whisperView == null) {
+					whisperView = new ChatView(whisperChannel.getName());
+					whisperView.addChannel(whisperChannel);
+					whisperView.setOutgoingPrefix("/twitch " + (isSelf ? receiver.getNick().toLowerCase(Locale.ENGLISH) : user.getNick().toLowerCase(Locale.ENGLISH)) + " ");
+					whisperView.setTemporary(true);
+					ChatViewManager.addChatView(whisperView);
+				}
 
 				users.put(user.getNick().toLowerCase(Locale.ENGLISH), user);
 				ChatTweaks.addChatMessage(chatMessage, whisperChannel);
@@ -362,7 +360,7 @@ public class TwitchChatHandler extends TMIAdapter {
 							ITextComponent removedMessageComponent = new TextComponentString("<message deleted>");
 							removedMessageComponent.getStyle().setColor(TextFormatting.GRAY);
 							message.setMessage(removedMessageComponent);
-							message.setTextComponent(formatComponent(message.getSender(), removedMessageComponent, false)); // TODO test me
+							message.setTextComponent(formatComponent(message.getSender(), removedMessageComponent, false));
 							message.clearImages();
 						}
 						ChatTweaks.refreshChat();

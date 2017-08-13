@@ -38,10 +38,16 @@ public class ConfigGUI extends GuiConfig {
 
 		list.addAll(ConfigElement.from(TwitchIntegrationConfig.class).getChildElements());
 
+		// I was going to just make it an entry that immediately updates the property, but some genius made the BooleanEntry constructor private
+		list.removeIf(p -> p.getName().equals("Use Anonymous Login"));
+
 		return list;
 	}
 
 	public static class ConfigEntryConnect extends GuiConfigEntries.CategoryEntry {
+
+		private boolean enabled;
+
 		public ConfigEntryConnect(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
 			super(owningScreen, owningEntryList, configElement);
 		}
@@ -73,24 +79,36 @@ public class ConfigGUI extends GuiConfig {
 		}
 
 		private void updateButton() {
-			boolean isAuthenticated = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID) != null;
+			boolean isAuthenticated = TwitchIntegrationConfig.useAnonymousLogin || ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID) != null;
 			boolean isConnected = TwitchIntegration.getTwitchManager().isConnected();
 			btnSelectCategory.displayString = I18n.format(isConnected ? "twitchintegration.config.disconnect" : "twitchintegration.config.connect");
 			if (isAuthenticated) {
 				btnSelectCategory.displayString = TextFormatting.GREEN + btnSelectCategory.displayString;
-				btnSelectCategory.enabled = true;
+				enabled = true;
 			} else {
-				btnSelectCategory.enabled = false;
+				enabled = isConnected;
 			}
+		}
+
+		@Override
+		public boolean enabled() {
+			return enabled;
 		}
 	}
 
 	public static class ConfigEntryAuthenticate extends GuiConfigEntries.CategoryEntry {
 		public ConfigEntryAuthenticate(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
 			super(owningScreen, owningEntryList, configElement);
-			if (ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID) == null) {
+		}
+
+		@Override
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
+			boolean isAuthenticated = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID) != null;
+			btnSelectCategory.displayString = I18n.format(isAuthenticated ? "twitchintegration.config.edit_authentication" : "twitchintegration.config.authenticate");
+			if (ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID) == null && !TwitchIntegrationConfig.useAnonymousLogin) {
 				btnSelectCategory.displayString = TextFormatting.GREEN + btnSelectCategory.displayString;
 			}
+			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected);
 		}
 
 		@Override

@@ -147,6 +147,6 @@ public class TwitchChannel {
 		twitchView.setOutputFormat("%s: %m");
 		twitchView.setOutgoingPrefix("/twitch #" + name.toLowerCase(Locale.ENGLISH) + " ");
 		ChatViewManager.addChatView(twitchView);
-		ChatViewManager.save(); // TODO check if this is an issue in the config GUI
+		ChatViewManager.save();
 	}
 }
