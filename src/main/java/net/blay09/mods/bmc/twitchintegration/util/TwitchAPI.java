@@ -51,10 +51,10 @@ public class TwitchAPI {
 		return -1;
 	}
 
-	public static Map<String, TwitchBadge> loadChannelBadges(TwitchChannel channel) {
+	public static Map<String, TwitchBadge> loadChannelSpecificBadges(TwitchChannel channel) {
 		Map<String, TwitchBadge> result = Maps.newHashMap();
 		try {
-			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "twitch_" + channel.getName() + "_badges", null);
+			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "twitch_" + channel.getName() + "_badgesv1", null);
 			if (object != null && object.has("badge_sets")) {
 				JsonObject badgeSets = object.getAsJsonObject("badge_sets");
 				for (Map.Entry<String, JsonElement> entry : badgeSets.entrySet()) {
@@ -80,7 +80,7 @@ public class TwitchAPI {
 		return result;
 	}
 
-	public static Map<String, TwitchBadge> loadChannelSpecificBadges(TwitchChannel channel) {
+	public static Map<String, TwitchBadge> loadChannelBadges(TwitchChannel channel) {
 		Map<String, TwitchBadge> result = Maps.newHashMap();
 		try {
 			JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/chat/" + channel.getId() + "/badges?client_id=" + CLIENT_ID, "twitch_" + channel.getName() + "_badges", "application/vnd.twitchtv.v5+json");
@@ -90,10 +90,10 @@ public class TwitchAPI {
 						continue;
 					}
 					JsonObject badgeObject = entry.getValue().getAsJsonObject();
+					if(!badgeObject.has("image")) {
+						continue;
+					}
 					try {
-						// TODO [13:58:34] [Client thread/ERROR]: Unexpected error when loading chat badges for channel Gosu:
-						// java.lang.NullPointerException
-						// at net.blay09.mods.bmc.twitchintegration.util.TwitchAPI.loadChannelSpecificBadges(TwitchAPI.java:94) ~[TwitchAPI.class:?]
 						TwitchBadge badge = new TwitchBadge(ImageLoader.loadImage(new URI(badgeObject.get("image").getAsString()), channel.getName() + "_" + entry.getKey()), ITooltipProvider.EMPTY);
 						result.put(entry.getKey(), badge);
 					} catch (IOException | URISyntaxException e) {

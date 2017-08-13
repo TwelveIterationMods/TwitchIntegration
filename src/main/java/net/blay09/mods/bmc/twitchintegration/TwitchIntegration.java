@@ -28,6 +28,11 @@ public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
 	// TODO Edit Message Format is empty
+	// TODO also delete the Twitch view if it is managed by twitch channel
+	// TODO disable debug mode for TMI
+	// TODO delete doesn't seem to save
+	// TODO test whispers
+	// TODO remove Managed
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;

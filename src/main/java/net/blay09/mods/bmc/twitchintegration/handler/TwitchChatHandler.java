@@ -194,10 +194,13 @@ public class TwitchChatHandler extends TMIAdapter {
 			ChatChannel targetChannel = twitchChannel != null ? twitchChannel.getChatChannel() : null;
 
 			// Format Message
-			ITextComponent textComponent = formatComponent(format, channel, user, message, tmpBadges, tmpEmotes, null, twitchMessage.isAction());
+			ITextComponent senderComponent = formatSenderComponent(user, tmpBadges);
+			ITextComponent messageComponent = formatMessageComponent(message, twitchMessage.isAction);
+			ITextComponent textComponent = formatComponent(senderComponent, messageComponent, twitchMessage.isAction());
 			ChatMessage chatMessage = ChatTweaks.createChatMessage(textComponent);
-			chatMessage.setSender(user.getDisplayName());
-			chatMessage.setMessage(message);
+			chatMessage.setSender(senderComponent);
+			chatMessage.setMessage(messageComponent);
+			chatMessage.setOutputVar("c", formatChannelComponent(channel));
 			chatMessage.setManaged(true);
 			chatMessage.withRGB(twitchMessage.isAction() ? 2 : 1);
 			for (ChatImage chatImage : tmpBadges) {
@@ -394,7 +397,43 @@ public class TwitchChatHandler extends TMIAdapter {
 		twitchManager.disconnect();
 	}
 
-	@Deprecated // TODO this can be entirely handled by the output format, I think?
+	@Nullable
+	public static ITextComponent formatSenderComponent(@Nullable TwitchUser user, @Nullable List<ChatImage> nameBadges) {
+		if(user == null) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		if (nameBadges != null) {
+			for (ChatImage chatImage : nameBadges) {
+				sb.append(ChatTweaks.TEXT_FORMATTING_EMOTE);
+				for (int i = 0; i < chatImage.getSpaces(); i++) {
+					sb.append(' ');
+				}
+			}
+		}
+		return new TextComponentString(sb.toString() + ChatTweaks.TEXT_FORMATTING_RGB + user.getDisplayName() + ChatTweaks.TEXT_FORMATTING_RGB);
+	}
+
+	public static ITextComponent formatMessageComponent(String message, boolean isAction) {
+		message = TextFormatting.getTextWithoutFormattingCodes(message);
+		assert message != null;
+		return ForgeHooks.newChatWithLinks(isAction ? ChatTweaks.TEXT_FORMATTING_RGB + message : message);
+	}
+
+	@Nullable
+	public static ITextComponent formatChannelComponent(@Nullable String channel) {
+		return channel != null ? new TextComponentString(channel) : null;
+	}
+
+	public static ITextComponent formatComponent(ITextComponent senderComponent, ITextComponent messageComponent, boolean isAction) {
+		ITextComponent textComponent = new TextComponentString("");
+		textComponent.appendSibling(senderComponent);
+		textComponent.appendText(isAction ? " " : ": ");
+		textComponent.appendSibling(messageComponent);
+		return textComponent;
+	}
+
+	@Deprecated
 	public static ITextComponent formatComponent(String format, @Nullable String channel, TwitchUser user, String message, @Nullable List<ChatImage> nameBadges, @Nullable List<ChatImage> emotes, @Nullable TwitchUser whisperReceiver, boolean isAction) {
 		String[] parts = PATTERN_FORMAT.split(format);
 		TextComponentString root = null;
