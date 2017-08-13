@@ -39,7 +39,6 @@ import javax.annotation.Nullable;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,7 +73,6 @@ public class TwitchChatHandler extends TMIAdapter {
 	}
 
 	private static final Pattern PATTERN_FORMAT = Pattern.compile("(?<=%[ucmr])|(?=%[ucmr])");
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("[HH:mm]");
 	private final TwitchManager twitchManager;
 
 	public TwitchChatHandler(TwitchManager twitchManager) {
@@ -101,10 +99,10 @@ public class TwitchChatHandler extends TMIAdapter {
 
 	@Override
 	public void onChatMessage(TMIClient client, String channel, TwitchUser user, TwitchMessage message) {
-		onTwitchChat(client, TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, message);
+		onTwitchChat(client, channel, user, message);
 	}
 
-	public void onTwitchChat(final TMIClient client, final String format, final String channel, final TwitchUser user, final TwitchMessage twitchMessage) {
+	public void onTwitchChat(final TMIClient client, final String channel, final TwitchUser user, final TwitchMessage twitchMessage) {
 		Minecraft.getMinecraft().addScheduledTask(() -> {
 			TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 
@@ -201,7 +199,6 @@ public class TwitchChatHandler extends TMIAdapter {
 			chatMessage.setSender(senderComponent);
 			chatMessage.setMessage(messageComponent);
 			chatMessage.setOutputVar("c", formatChannelComponent(channel));
-			chatMessage.setManaged(true);
 			chatMessage.withRGB(twitchMessage.isAction() ? 2 : 1);
 			for (ChatImage chatImage : tmpBadges) {
 				chatMessage.addImage(chatImage);
@@ -245,7 +242,7 @@ public class TwitchChatHandler extends TMIAdapter {
 			ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribe", user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getChatChannel() : null);
 		});
 		if (message != null) {
-			onTwitchChat(client, TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, new TwitchMessage(message, -1, false, 0));
+			onTwitchChat(client, channel, user, new TwitchMessage(message, -1, false, 0));
 		}
 	}
 
@@ -290,21 +287,22 @@ public class TwitchChatHandler extends TMIAdapter {
 				if (index < message.length()) {
 					sb.append(message.substring(index));
 				}
-				String message1 = sb.toString();
+				String transformedMessage = sb.toString();
 
 				ChatChannel whisperChannel = ChatManager.getTemporaryChannel("(" + (isSelf ? receiver.getDisplayName() : user.getDisplayName()) + ")");
 
 				// Format Message
-				String format = TwitchIntegrationConfig.Format.whisperMessageFormat;
-				boolean isAction = message1.startsWith("/me ") && message1.length() > 4;
+				boolean isAction = transformedMessage.startsWith("/me ") && transformedMessage.length() > 4;
 				if (isAction) {
-					format = TwitchIntegrationConfig.Format.whisperActionFormat;
-					message1 = message1.substring(4);
+					transformedMessage = transformedMessage.substring(4);
 				}
-				format = TextFormatting.GRAY + dateFormat.format(new Date()) + " " + TextFormatting.RESET + format;
-				ITextComponent textComponent = formatComponent(format, null, user, message1, null, tmpEmotes, receiver, isAction);
+				ITextComponent senderComponent = formatSenderComponent(user, tmpBadges);
+				ITextComponent messageComponent = formatMessageComponent(transformedMessage, isAction);
+				ITextComponent textComponent = formatComponent(senderComponent, messageComponent, isAction);
 				ChatMessage chatMessage = ChatTweaks.createChatMessage(textComponent);
-				chatMessage.setManaged(true);
+				chatMessage.setSender(senderComponent);
+				chatMessage.setMessage(messageComponent);
+				chatMessage.setOutputVar("r", formatSenderComponent(receiver, null));
 				chatMessage.withRGB(isAction ? 3 : 2);
 				for (ChatImage chatImage : tmpEmotes) {
 					chatMessage.addImage(chatImage);
@@ -315,13 +313,13 @@ public class TwitchChatHandler extends TMIAdapter {
 				} else {
 					chatMessage.setRGBColor(0, 0x808080);
 				}
-				if (receiver.hasColor() && !TwitchIntegrationConfig.disableUserColors) { // TODO this assumes that receiver is always in second place, which makes sense but isn't perfect
+				if (receiver.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
 					int nameColor = ChatTweaks.colorFromHex(receiver.getColor());
 					chatMessage.setRGBColor(1, getAcceptableNameColor(nameColor));
 				} else {
 					chatMessage.setRGBColor(1, 0x808080);
 				}
-				if (isAction) { // TODO this assumes that message is always in third place, which makes sense but isn't perfect
+				if (isAction) {
 					if (user.hasColor() && !TwitchIntegrationConfig.disableUserColors) {
 						int nameColor = ChatTweaks.colorFromHex(user.getColor());
 						chatMessage.setRGBColor(2, getAcceptableNameColor(nameColor));
@@ -360,13 +358,11 @@ public class TwitchChatHandler extends TMIAdapter {
 						ChatTweaks.refreshChat();
 						break;
 					case Replace:
-						TwitchUser user = users.get(username);
-						if (user == null) {
-							user = new TwitchUser(new IRCUser(username, null, null));
-						}
 						for (ChatMessage message : messages.get(new ChannelUser(channel, username))) {
-							ITextComponent removedComponent = formatComponent(TwitchIntegrationConfig.Format.singleMessageFormat, channel, user, TextFormatting.GRAY + "<message deleted>", null, null, null, false);
-							message.setTextComponent(removedComponent);
+							ITextComponent removedMessageComponent = new TextComponentString("<message deleted>");
+							removedMessageComponent.getStyle().setColor(TextFormatting.GRAY);
+							message.setMessage(removedMessageComponent);
+							message.setTextComponent(formatComponent(message.getSender(), removedMessageComponent, false)); // TODO test me
 							message.clearImages();
 						}
 						ChatTweaks.refreshChat();
@@ -399,7 +395,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
 	@Nullable
 	public static ITextComponent formatSenderComponent(@Nullable TwitchUser user, @Nullable List<ChatImage> nameBadges) {
-		if(user == null) {
+		if (user == null) {
 			return null;
 		}
 		StringBuilder sb = new StringBuilder();
@@ -431,65 +427,6 @@ public class TwitchChatHandler extends TMIAdapter {
 		textComponent.appendText(isAction ? " " : ": ");
 		textComponent.appendSibling(messageComponent);
 		return textComponent;
-	}
-
-	@Deprecated
-	public static ITextComponent formatComponent(String format, @Nullable String channel, TwitchUser user, String message, @Nullable List<ChatImage> nameBadges, @Nullable List<ChatImage> emotes, @Nullable TwitchUser whisperReceiver, boolean isAction) {
-		String[] parts = PATTERN_FORMAT.split(format);
-		TextComponentString root = null;
-		for (String key : parts) {
-			if (key.charAt(0) == '%') {
-				if (root == null) {
-					root = new TextComponentString("");
-				}
-				switch (key.charAt(1)) {
-					case 'c':
-						root.appendText(channel != null ? channel : "%c");
-						break;
-					case 'u':
-						StringBuilder sb = new StringBuilder();
-						if (nameBadges != null) {
-							for (ChatImage chatImage : nameBadges) {
-								chatImage.setIndex(chatImage.getIndex() + root.getFormattedText().length());
-								sb.append("§*");
-								for (int i = 0; i < chatImage.getSpaces(); i++) {
-									sb.append(' ');
-								}
-							}
-						}
-						ITextComponent userComponent = new TextComponentString(sb.toString() + ChatTweaks.TEXT_FORMATTING_RGB + user.getDisplayName() + ChatTweaks.TEXT_FORMATTING_RGB);
-						root.appendSibling(userComponent);
-						break;
-					case 'r':
-						if (whisperReceiver != null) {
-							ITextComponent receiverComponent = new TextComponentString(ChatTweaks.TEXT_FORMATTING_RGB + whisperReceiver.getDisplayName() + ChatTweaks.TEXT_FORMATTING_RGB);
-							root.appendSibling(receiverComponent);
-						} else {
-							root.appendText("%r");
-						}
-						break;
-					case 'm':
-						if (emotes != null) {
-							for (ChatImage chatImage : emotes) {
-								chatImage.setIndex(chatImage.getIndex() + root.getFormattedText().length());
-							}
-						}
-						message = TextFormatting.getTextWithoutFormattingCodes(message);
-						root.appendSibling(ForgeHooks.newChatWithLinks(isAction ? ChatTweaks.TEXT_FORMATTING_RGB + message : message));
-						break;
-				}
-			} else {
-				if (root == null) {
-					root = new TextComponentString(key);
-				} else {
-					root.appendSibling(new TextComponentString(key));
-				}
-			}
-		}
-		if (root == null) {
-			root = new TextComponentString(format);
-		}
-		return root;
 	}
 
 	public TwitchUser getThisUser(TMIClient client, String channel) {

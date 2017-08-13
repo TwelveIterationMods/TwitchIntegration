@@ -57,5 +57,4 @@ twitchintegration.config.edit_authentication=Edit Authentication
 twitchintegration.config.port=Port
 twitchintegration.config.show_whispers=Show Whispers
 twitchintegration.config.use_anonymous_login=Use anonymous login
-twitchintegration.config.format=Edit Message Format
 twitchintegration.config.twitch_channels=Channels

@@ -6,9 +6,6 @@ import net.minecraftforge.common.config.Config;
 @Config.LangKey("twitchintegration.config")
 public class TwitchIntegrationConfig {
 
-	@Config.LangKey("twitchintegration.config.format")
-	public static Format format = new Format();
-
 	@Config.Name("Use Anonymous Login")
 	public static boolean useAnonymousLogin = false;
 
@@ -23,12 +20,5 @@ public class TwitchIntegrationConfig {
 
 	@Config.Name("Disable Name Badges")
 	public static boolean disableNameBadges = false;
-
-	public static class Format {
-		public static String singleMessageFormat = "%u: %m";
-		public static String singleActionFormat = "%u %m";
-		public static String whisperMessageFormat = "%u \u25b6 %r: %m";
-		public static String whisperActionFormat = "%u \u25b6 %r : %m";
-	}
 
 }
