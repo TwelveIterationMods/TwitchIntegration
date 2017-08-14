@@ -1,4 +1,4 @@
-package net.blay09.mods.bmc.twitchintegration.handler;
+package net.blay09.mods.twitchintegration.handler;
 
 import net.blay09.mods.chattweaks.image.ITooltipProvider;
 import net.blay09.mods.chattweaks.image.renderable.IChatRenderable;

@@ -1,10 +1,10 @@
-package net.blay09.mods.bmc.twitchintegration;
+package net.blay09.mods.twitchintegration;
 
 import com.google.common.collect.Lists;
 import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchMessage;
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
+import net.blay09.mods.twitchintegration.handler.TwitchChannel;
+import net.blay09.mods.twitchintegration.handler.TwitchChatHandler;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;

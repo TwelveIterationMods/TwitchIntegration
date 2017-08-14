@@ -1,8 +1,8 @@
-package net.blay09.mods.bmc.twitchintegration.handler;
+package net.blay09.mods.twitchintegration.handler;
 
 import com.google.gson.JsonObject;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.util.TwitchAPI;
+import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.util.TwitchAPI;
 import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatViewManager;
 import net.blay09.mods.chattweaks.chat.ChatChannel;
@@ -147,6 +147,5 @@ public class TwitchChannel {
 		twitchView.setOutputFormat("%s: %m");
 		twitchView.setOutgoingPrefix("/twitch #" + name.toLowerCase(Locale.ENGLISH) + " ");
 		ChatViewManager.addChatView(twitchView);
-		ChatViewManager.save();
 	}
 }

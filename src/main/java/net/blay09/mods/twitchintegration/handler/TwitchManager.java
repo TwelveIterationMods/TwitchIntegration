@@ -1,4 +1,4 @@
-package net.blay09.mods.bmc.twitchintegration.handler;
+package net.blay09.mods.twitchintegration.handler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,8 +9,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import net.blay09.javairc.IRCConfiguration;
 import net.blay09.javatmi.TMIClient;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
+import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.ChatViewManager;
@@ -110,7 +110,7 @@ public class TwitchManager {
 	public void updateChannelStates() {
 		// Leave channels if they were removed
 		for (TwitchChannel channel : activeChannels) {
-			if (!channels.containsKey(channel.getName())) {
+			if (!channels.containsKey(channel.getName().toLowerCase(Locale.ENGLISH))) {
 				ChatView chatView = ChatViewManager.getChatView(channel.getName());
 				if (chatView != null && chatView.getChannels().size() == 1 && chatView.getChannels().contains(channel.getChatChannel())) {
 					ChatViewManager.removeChatView(chatView);

@@ -1,8 +1,8 @@
-package net.blay09.mods.bmc.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui;
 
 import com.google.common.collect.Lists;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
+import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;

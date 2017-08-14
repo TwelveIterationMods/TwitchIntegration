@@ -1,4 +1,4 @@
-package net.blay09.mods.bmc.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui;
 
 import net.minecraftforge.fml.client.config.ConfigGuiType;
 import net.minecraftforge.fml.client.config.DummyConfigElement;

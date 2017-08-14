@@ -1,4 +1,4 @@
-package net.blay09.mods.bmc.twitchintegration;
+package net.blay09.mods.twitchintegration;
 
 import net.minecraftforge.common.config.Config;
 

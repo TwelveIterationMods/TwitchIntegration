@@ -1,6 +1,6 @@
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-package net.blay09.mods.bmc.twitchintegration;
+package net.blay09.mods.twitchintegration;
 
 import mcp.MethodsReturnNonnullByDefault;
 

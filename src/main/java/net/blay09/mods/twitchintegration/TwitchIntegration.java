@@ -1,10 +1,9 @@
-package net.blay09.mods.bmc.twitchintegration;
+package net.blay09.mods.twitchintegration;
 
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchManager;
+import net.blay09.mods.twitchintegration.handler.TwitchChannel;
+import net.blay09.mods.twitchintegration.handler.TwitchChatHandler;
+import net.blay09.mods.twitchintegration.handler.TwitchManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
-import net.blay09.mods.chattweaks.auth.AuthManager;
 import net.blay09.mods.chattweaks.auth.TokenPair;
 import net.blay09.mods.chattweaks.chat.emotes.twitch.BTTVChannelEmotes;
 import net.blay09.mods.chattweaks.chat.emotes.twitch.FFZChannelEmotes;
@@ -26,13 +25,16 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 
 @Mod(modid = TwitchIntegration.MOD_ID, name = "Twitch Integration", acceptedMinecraftVersions = "[1.11.2]", clientSideOnly = true, dependencies = "required-after:chattweaks",
-guiFactory = "net.blay09.mods.bmc.twitchintegration.gui.GuiFactory")
+guiFactory = "net.blay09.mods.twitchintegration.gui.GuiFactory")
 public class TwitchIntegration {
 
 	public static final String MOD_ID = "twitchintegration";
 
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;
+
+	// TODO preload badges to prevent lagspike on first message
+	// TODO auto-created views are disappearing when a new channel is added?
 
 	public static Logger logger = LogManager.getLogger(MOD_ID);
 

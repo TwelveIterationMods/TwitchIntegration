@@ -1,8 +1,8 @@
-package net.blay09.mods.bmc.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui;
 
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.bmc.twitchintegration.util.TwitchAPI;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
+import net.blay09.mods.twitchintegration.util.TwitchAPI;
+import net.blay09.mods.twitchintegration.TwitchIntegration;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.auth.TokenPair;
 import net.blay09.mods.chattweaks.balyware.gui.GuiPasswordField;
@@ -12,8 +12,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 
 import javax.annotation.Nullable;

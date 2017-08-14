@@ -1,4 +1,4 @@
-package net.blay09.mods.bmc.twitchintegration.handler;
+package net.blay09.mods.twitchintegration.handler;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -10,8 +10,8 @@ import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchEmote;
 import net.blay09.javatmi.TwitchUser;
 import net.blay09.javatmi.TwitchMessage;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegrationConfig;
+import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.ChatViewManager;
@@ -37,7 +37,6 @@ import net.minecraftforge.common.ForgeHooks;
 
 import javax.annotation.Nullable;
 import java.awt.*;
-import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;

@@ -1,6 +1,6 @@
-package net.blay09.mods.bmc.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui;
 
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchIntegration;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;

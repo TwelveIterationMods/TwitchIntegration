@@ -1,31 +1,16 @@
-package net.blay09.mods.bmc.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui;
 
 import com.google.common.collect.Lists;
-import net.blay09.mods.bmc.twitchintegration.TwitchIntegration;
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchChannel;
-import net.blay09.mods.bmc.twitchintegration.handler.TwitchChatHandler;
-import net.blay09.mods.chattweaks.ChatManager;
+import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.handler.TwitchChannel;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.ChatViewManager;
-import net.blay09.mods.chattweaks.balyware.gui.FormattedFontRenderer;
-import net.blay09.mods.chattweaks.balyware.gui.GuiFormattedTextField;
-import net.blay09.mods.chattweaks.balyware.gui.IStringFormatter;
-import net.blay09.mods.chattweaks.chat.ChatChannel;
 import net.blay09.mods.chattweaks.chat.ChatView;
-import net.blay09.mods.chattweaks.chat.MessageStyle;
-import net.blay09.mods.chattweaks.gui.settings.FormatStringFormatter;
-import net.blay09.mods.chattweaks.gui.settings.RegExStringFormatter;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.client.config.ConfigGuiType;
-import net.minecraftforge.fml.client.config.GuiCheckBox;
 import net.minecraftforge.fml.client.config.GuiConfig;
-import net.minecraftforge.fml.client.config.GuiConfigEntries;
-import net.minecraftforge.fml.client.config.GuiEditArray;
-import net.minecraftforge.fml.client.config.GuiEditArrayEntries;
 import net.minecraftforge.fml.client.config.IConfigElement;
-import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
@@ -60,10 +45,7 @@ public class GuiTwitchChannel extends GuiConfig {
 
 			ChatView chatView = ChatViewManager.getChatView(twitchChannel.getName());
 			if(isNew && chatView == null) {
-				chatView = new ChatView(twitchChannel.getName());
-				chatView.addChannel(twitchChannel.getChatChannel());
-				chatView.setOutgoingPrefix("/twitch " + twitchChannel.getName() + " ");
-				ChatViewManager.addChatView(chatView);
+				twitchChannel.createDefaultView();
 			}
 
 			mc.displayGuiScreen(parentScreen);
