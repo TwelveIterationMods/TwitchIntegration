@@ -33,16 +33,19 @@ public class TwitchIntegration {
 	@Mod.Instance(MOD_ID)
 	public static TwitchIntegration instance;
 
-	// TODO preload badges to prevent lagspike on first message
-	// TODO auto-created views are disappearing when a new channel is added?
-
 	public static Logger logger = LogManager.getLogger(MOD_ID);
 
 	private TwitchManager twitchManager;
 	private TwitchChatHandler twitchChatHandler;
+	private File configDir;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		configDir = new File(event.getModConfigurationDirectory(), "TwitchIntegration");
+		if(!configDir.exists() && !configDir.mkdirs()) {
+			logger.error("Failed to create Twitch Integration config directory.");
+		}
+
 		MinecraftForge.EVENT_BUS.register(this);
 
 		ClientCommandHandler.instance.registerCommand(new CommandTwitch());
@@ -50,7 +53,7 @@ public class TwitchIntegration {
 
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
-		twitchManager = new TwitchManager(new File(Minecraft.getMinecraft().mcDataDir, "config/TwitchIntegration/twitch_channels.json"));
+		twitchManager = new TwitchManager(new File(configDir, "twitch_channels.json"));
 		twitchChatHandler = new TwitchChatHandler(twitchManager);
 	}
 

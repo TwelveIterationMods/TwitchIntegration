@@ -45,6 +45,7 @@ public class TwitchManager {
 
 	public void addChannel(TwitchChannel channel) {
 		channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
+		channel.loadChannelBadges();
 		TwitchIntegration.loadChannelEmotes(channel);
 	}
 
@@ -67,6 +68,7 @@ public class TwitchManager {
 				channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
 				saveChannels();
 
+				channel.createOrUpdateChatChannel();
 				channel.createDefaultView();
 			}
 		}
@@ -144,7 +146,9 @@ public class TwitchManager {
 	}
 
 	public void removeTwitchChannel(TwitchChannel channel) {
-		ChatManager.removeChatChannel(channel.getChatChannel().getName());
+		if(channel.getChatChannel() != null) {
+			ChatManager.removeChatChannel(channel.getChatChannel().getName());
+		}
 		channels.remove(channel.getName().toLowerCase(Locale.ENGLISH));
 		if (activeChannels.remove(channel)) {
 			if (twitchClient != null) {
@@ -161,6 +165,7 @@ public class TwitchManager {
 			for (JsonElement element : channels) {
 				JsonObject obj = element.getAsJsonObject();
 				TwitchChannel channel = TwitchChannel.fromJson(obj);
+				channel.createOrUpdateChatChannel();
 				addChannel(channel);
 			}
 		} catch (FileNotFoundException ignored) {

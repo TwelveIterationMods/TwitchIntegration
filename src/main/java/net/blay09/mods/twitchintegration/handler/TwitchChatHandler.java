@@ -174,7 +174,7 @@ public class TwitchChatHandler extends TMIAdapter {
 			if (twitchChannel != null && user.hasBadges() && !TwitchIntegrationConfig.disableNameBadges) {
 				for (String badgeName : user.getBadges()) {
 					int slash = badgeName.indexOf('/');
-					int version = 0;
+					int version = 1;
 					if (slash != -1) {
 						version = Integer.parseInt(badgeName.substring(slash + 1, badgeName.length()));
 						badgeName = badgeName.substring(0, slash);
@@ -410,7 +410,7 @@ public class TwitchChatHandler extends TMIAdapter {
 	public static ITextComponent formatMessageComponent(String message, boolean isAction) {
 		message = TextFormatting.getTextWithoutFormattingCodes(message);
 		assert message != null;
-		return ForgeHooks.newChatWithLinks(isAction ? ChatTweaks.TEXT_FORMATTING_RGB + message : message);
+		return ForgeHooks.newChatWithLinks(message);
 	}
 
 	@Nullable

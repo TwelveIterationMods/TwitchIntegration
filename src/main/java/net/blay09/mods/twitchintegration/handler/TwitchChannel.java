@@ -1,6 +1,8 @@
 package net.blay09.mods.twitchintegration.handler;
 
 import com.google.gson.JsonObject;
+import net.blay09.mods.chattweaks.image.ITooltipProvider;
+import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
 import net.blay09.mods.twitchintegration.TwitchIntegration;
 import net.blay09.mods.twitchintegration.util.TwitchAPI;
 import net.blay09.mods.chattweaks.ChatManager;
@@ -39,19 +41,23 @@ public class TwitchChannel {
 	private Map<String, TwitchBadge> badges;
 
 	public TwitchChannel(String name) {
-		setName(name);
+		this.name = name;
 	}
 
-	public void setName(String name) {
-		if(this.name != null) {
-			ChatManager.removeChatChannel(this.name);
+	public void createOrUpdateChatChannel() {
+		if(chatChannel != null && !chatChannel.getName().equalsIgnoreCase(name)) {
+			ChatManager.removeChatChannel(chatChannel.getName());
 		}
-		this.name = name;
 		chatChannel = ChatManager.getChatChannel(name);
 		if(chatChannel == null) {
 			chatChannel = new ChatChannel(name, "Twitch Chat for '" + name + "'", new ResourceLocation(TwitchIntegration.MOD_ID, "icon.png"));
 			ChatManager.addChatChannel(chatChannel);
 		}
+	}
+
+	public void setName(String name) {
+		this.name = name;
+		createOrUpdateChatChannel();
 	}
 
 	public int getId() {
@@ -88,9 +94,12 @@ public class TwitchChannel {
 
 	public void setActive(boolean active) {
 		this.active = active;
-		chatChannel.setEnabled(active);
+		if(chatChannel != null) {
+			chatChannel.setEnabled(active);
+		}
 	}
 
+	@Nullable
 	public ChatChannel getChatChannel() {
 		return chatChannel;
 	}
@@ -114,26 +123,27 @@ public class TwitchChannel {
 		return channel;
 	}
 
-	public boolean loadChannelId() {
-		if (id == -1) {
-			id = TwitchAPI.loadChannelId(name);
-			return id != -1;
-		}
-		return true;
-	}
-
 	public void loadChannelBadges() {
-		if (!loadChannelId()) {
-			return;
+		if(badges == null) {
+			new Thread(() -> {
+				if (id == -1) {
+					id = TwitchAPI.loadChannelId(name);
+					if (id == -1) {
+						return;
+					}
+				}
+				Map<String, TwitchBadge> badges = TwitchAPI.getDefaultBadges();
+				badges.putAll(TwitchAPI.loadChannelSpecificBadges(this));
+
+				this.badges = badges;
+			}).start();
 		}
-		badges = TwitchAPI.loadChannelBadges(this);
-		badges.putAll(TwitchAPI.loadChannelSpecificBadges(this));
 	}
 
 	@Nullable
 	public TwitchBadge getBadge(String key, int version) {
 		if(badges == null) {
-			loadChannelBadges();
+			return null;
 		}
 		TwitchBadge badge = badges.get(key + "/" + version);
 		if(badge == null) {
@@ -144,8 +154,9 @@ public class TwitchChannel {
 
 	public void createDefaultView() {
 		ChatView twitchView = new ChatView(name);
-		twitchView.setOutputFormat("%s: %m");
+		twitchView.addChannel(chatChannel);
 		twitchView.setOutgoingPrefix("/twitch #" + name.toLowerCase(Locale.ENGLISH) + " ");
 		ChatViewManager.addChatView(twitchView);
+		ChatViewManager.save();
 	}
 }

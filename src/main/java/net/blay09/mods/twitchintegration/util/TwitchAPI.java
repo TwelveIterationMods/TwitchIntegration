@@ -15,6 +15,7 @@ import net.blay09.mods.chattweaks.balyware.CachedAPI;
 import net.blay09.mods.chattweaks.image.ITooltipProvider;
 import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,6 +33,7 @@ public class TwitchAPI {
 	private static final String TWITCH_AUTHORIZE = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id={{CLIENT_ID}}&redirect_uri={{REDIRECT_URI}}&scope=chat_login&force_verify=true";
 
 	private static TokenReceiver tokenReceiver;
+	private static Map<String, TwitchBadge> defaultBadges;
 
 	public static int loadChannelId(String name) {
 		try {
@@ -51,10 +53,39 @@ public class TwitchAPI {
 		return -1;
 	}
 
+	public static Map<String, TwitchBadge> loadGlobalBadges() {
+		Map<String, TwitchBadge> result = Maps.newHashMap();
+		try {
+			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/global/display", "twitch_badges", null);
+			if (object != null && object.has("badge_sets")) {
+				JsonObject badgeSets = object.getAsJsonObject("badge_sets");
+				for (Map.Entry<String, JsonElement> entry : badgeSets.entrySet()) {
+					String badgeName = entry.getKey();
+					JsonObject badgeObject = entry.getValue().getAsJsonObject();
+					JsonObject badgeVersions = badgeObject.getAsJsonObject("versions");
+					for (Map.Entry<String, JsonElement> version : badgeVersions.entrySet()) {
+						String slashVal = version.getKey();
+						String imageUri = version.getValue().getAsJsonObject().get("image_url_1x").getAsString();
+						TwitchBadge badge = null;
+						try {
+							badge = new TwitchBadge(ImageLoader.loadImage(new URI(imageUri), "twitch_" + badgeName + "_" + slashVal), ITooltipProvider.EMPTY);
+						} catch (IOException | URISyntaxException e) {
+							TwitchIntegration.logger.error("Could not load global chat badge {}: ", badgeName, e);
+						}
+						result.put(badgeName + "/" + version.getKey(), badge);
+					}
+				}
+			}
+		} catch (Exception e) {
+			TwitchIntegration.logger.error("Unexpected error when loading global chat badges: ", e);
+		}
+		return result;
+	}
+
 	public static Map<String, TwitchBadge> loadChannelSpecificBadges(TwitchChannel channel) {
 		Map<String, TwitchBadge> result = Maps.newHashMap();
 		try {
-			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "twitch_" + channel.getName() + "_badgesv1", null);
+			JsonObject object = CachedAPI.loadCachedAPI("https://badges.twitch.tv/v1/badges/channels/" + channel.getId() + "/display", "twitch_" + channel.getName() + "_badges", null);
 			if (object != null && object.has("badge_sets")) {
 				JsonObject badgeSets = object.getAsJsonObject("badge_sets");
 				for (Map.Entry<String, JsonElement> entry : badgeSets.entrySet()) {
@@ -71,33 +102,6 @@ public class TwitchAPI {
 							TwitchIntegration.logger.error("Could not load chat badge {} for channel {}: ", badgeName, channel.getName(), e);
 						}
 						result.put(badgeName + "/" + version.getKey(), badge);
-					}
-				}
-			}
-		} catch (Exception e) {
-			TwitchIntegration.logger.error("Unexpected error when loading chat badges for channel {}: ", channel.getName(), e);
-		}
-		return result;
-	}
-
-	public static Map<String, TwitchBadge> loadChannelBadges(TwitchChannel channel) {
-		Map<String, TwitchBadge> result = Maps.newHashMap();
-		try {
-			JsonObject object = CachedAPI.loadCachedAPI("https://api.twitch.tv/kraken/chat/" + channel.getId() + "/badges?client_id=" + CLIENT_ID, "twitch_" + channel.getName() + "_badges", "application/vnd.twitchtv.v5+json");
-			if (object != null) {
-				for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-					if (entry.getValue().isJsonNull()) {
-						continue;
-					}
-					JsonObject badgeObject = entry.getValue().getAsJsonObject();
-					if(!badgeObject.has("image")) {
-						continue;
-					}
-					try {
-						TwitchBadge badge = new TwitchBadge(ImageLoader.loadImage(new URI(badgeObject.get("image").getAsString()), channel.getName() + "_" + entry.getKey()), ITooltipProvider.EMPTY);
-						result.put(entry.getKey(), badge);
-					} catch (IOException | URISyntaxException e) {
-						TwitchIntegration.logger.error("Could not load chat badge {} for channel {}: ", entry.getKey(), channel.getName(), e);
 					}
 				}
 			}
@@ -150,4 +154,30 @@ public class TwitchAPI {
 		}).start();
 	}
 
+	public static Map<String, TwitchBadge> getDefaultBadges() {
+		if(defaultBadges == null) {
+			defaultBadges = loadGlobalBadges();
+//			defaultBadges = Maps.newHashMap();
+//			defaultBadges.put("staff", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_staff.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("admin", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_admin.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("global_mod", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_global_mod.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("broadcaster", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_broadcaster.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("moderator", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_moderator.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("partner", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_partner.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("premium", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_premium.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("turbo", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_turbo.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/1", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits1.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/100", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits100.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/1000", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits1000.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/5000", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits5000.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/10000", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits10000.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/25000", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits25000.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/50000", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits50000.png")), ITooltipProvider.EMPTY));
+//			defaultBadges.put("bits/75000", new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits75000.png")), ITooltipProvider.EMPTY));
+//			for (int i = 100000; i <= 1000000; i += 100000) {
+//				defaultBadges.put("bits/" + i, new TwitchBadge(ImageLoader.loadImage(new ResourceLocation(TwitchIntegration.MOD_ID, "badges/badge_bits" + i + ".png")), ITooltipProvider.EMPTY));
+//			}
+		}
+		return Maps.newHashMap(defaultBadges);
+	}
 }

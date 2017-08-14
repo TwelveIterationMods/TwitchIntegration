@@ -12,7 +12,7 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,7 +47,7 @@ public class CommandTwitch extends CommandBase {
 		TwitchChatHandler twitchChatHandler = TwitchIntegration.getTwitchChatHandler();
 		if(twitchClient != null) {
 			if(TwitchIntegrationConfig.useAnonymousLogin || twitchClient.getIRCConnection().getNick().startsWith("justinfan")) {
-				ITextComponent component = new TextComponentString("You can not send messages in anonymous mode.");
+				ITextComponent component = new TextComponentTranslation("twitchintegration.error.read_only_chat");
 				component.getStyle().setColor(TextFormatting.RED);
 				sender.sendMessage(component);
 				return;

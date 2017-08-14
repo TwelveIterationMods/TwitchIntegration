@@ -135,6 +135,7 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 		public boolean saveConfigElement() {
 			TwitchIntegration.getTwitchManager().removeAllChannels();
 			for(Object twitchChannel : currentValues) {
+				((TwitchChannel) twitchChannel).createOrUpdateChatChannel();
 				TwitchIntegration.getTwitchManager().addChannel((TwitchChannel) twitchChannel);
 			}
 			TwitchIntegration.getTwitchManager().updateChannelStates();
