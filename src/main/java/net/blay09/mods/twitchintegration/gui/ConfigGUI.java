@@ -67,9 +67,9 @@ public class ConfigGUI extends GuiConfig {
 		}
 
 		@Override
-		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partial) {
 			updateButton();
-			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected);
+			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected, partial);
 		}
 
 		@Override
@@ -102,13 +102,13 @@ public class ConfigGUI extends GuiConfig {
 		}
 
 		@Override
-		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partial) {
 			boolean isAuthenticated = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID) != null;
 			btnSelectCategory.displayString = I18n.format(isAuthenticated ? "twitchintegration.config.edit_authentication" : "twitchintegration.config.authenticate");
 			if (ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID) == null && !TwitchIntegrationConfig.useAnonymousLogin) {
 				btnSelectCategory.displayString = TextFormatting.GREEN + btnSelectCategory.displayString;
 			}
-			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected);
+			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected, partial);
 		}
 
 		@Override

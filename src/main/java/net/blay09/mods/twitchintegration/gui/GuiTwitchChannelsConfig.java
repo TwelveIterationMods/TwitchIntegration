@@ -25,24 +25,7 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 	public void initGui() {
 		super.initGui();
 
-		fixForge();
-	}
-
-	private void fixForge() { // TODO remove in 1.12
-		entryList = new TwitchChannelEditArrayEntries(this, mc, configElement, beforeValues, currentValues);
-
-		// Workaround for a Forge bug where it would call constructors of existing elements with .toString() ... fixed in 1.12
-		// Basically we just repopulate the entire list with proper constructor calls
-		entryList.listEntries.clear();
-		for (Object twitchChannel : currentValues) {
-			entryList.listEntries.add(new TwitchChannelArrayEntry(this, entryList, configElement, twitchChannel));
-		}
-		entryList.listEntries.add(new GuiEditArrayEntries.BaseEntry(this, entryList, configElement));
-	}
-
-	public void saveAndUpdateList() {
-		((TwitchChannelEditArrayEntries) entryList).saveList();
-		currentValues = ((GuiConfig) parentScreen).entryList.getListEntry(slotIndex).getCurrentValues();
+		entryList = createEntryList();
 	}
 
 	@Override
@@ -50,10 +33,20 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 		super.actionPerformed(button);
 
 		if (button == btnUndoChanges) {
-			fixForge();
+			entryList = createEntryList();
 		} else if(button == btnDefault) {
-			fixForge();
+			entryList = createEntryList();
 		}
+	}
+
+	/** This is still needed since Forge doesn't support custom entry lists by default **/
+	private TwitchChannelEditArrayEntries createEntryList() {
+		return new TwitchChannelEditArrayEntries(this, mc, configElement, beforeValues, currentValues);
+	}
+
+	public void saveAndUpdateList() {
+		((TwitchChannelEditArrayEntries) entryList).saveList();
+		currentValues = ((GuiConfig) parentScreen).entryList.getListEntry(slotIndex).getCurrentValues();
 	}
 
 	public static IConfigElement getDummyElement() {
@@ -105,13 +98,13 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 		}
 
 		@Override
-		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
-			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected);
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partial) {
+			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected, partial);
 
-			btnValueFixed.xPosition = listWidth / 2 - 150;
-			btnValueFixed.yPosition = y;
+			btnValueFixed.x = listWidth / 2 - 150;
+			btnValueFixed.y = y;
 			btnValueFixed.enabled = enabled();
-			btnValueFixed.drawButton(mc, mouseX, mouseY);
+			btnValueFixed.drawButton(mc, mouseX, mouseY, partial);
 		}
 
 		@Override
@@ -154,7 +147,7 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 		public TwitchChannelArrayEntry(GuiEditArray owningScreen, GuiEditArrayEntries owningEntryList, IConfigElement configElement, Object value) {
 			super(owningScreen, owningEntryList, configElement);
 
-			if (value.equals("")) { // TODO fix in 1.12, see fixForge()
+			if (value.equals("")) { // empty string means 'new'
 				twitchChannel = new TwitchChannel("");
 			} else if (value instanceof TwitchChannel) {
 				twitchChannel = (TwitchChannel) value;
@@ -166,11 +159,11 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 		}
 
 		@Override
-		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
-			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected);
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partial) {
+			super.drawEntry(slotIndex, x, y, listWidth, slotHeight, mouseX, mouseY, isSelected, partial);
 
-			button.xPosition = listWidth / 4 + 12;
-			button.yPosition = y;
+			button.x = listWidth / 4 + 12;
+			button.y = y;
 
 			if(twitchChannel != null) {
 				button.displayString = twitchChannel.getName();
@@ -181,7 +174,7 @@ public class GuiTwitchChannelsConfig extends GuiEditArray {
 				button.displayString = "invalid";
 			}
 
-			button.drawButton(owningEntryList.getMC(), mouseX, mouseY);
+			button.drawButton(owningEntryList.getMC(), mouseX, mouseY, partial);
 		}
 
 		@Override

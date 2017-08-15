@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
-@Mod(modid = TwitchIntegration.MOD_ID, name = "Twitch Integration", acceptedMinecraftVersions = "[1.11.2]", clientSideOnly = true, dependencies = "required-after:chattweaks",
+@Mod(modid = TwitchIntegration.MOD_ID, name = "Twitch Integration", acceptedMinecraftVersions = "[1.12]", clientSideOnly = true, dependencies = "required-after:chattweaks",
 guiFactory = "net.blay09.mods.twitchintegration.gui.GuiFactory")
 public class TwitchIntegration {
 
