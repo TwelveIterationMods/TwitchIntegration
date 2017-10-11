@@ -153,10 +153,12 @@ public class TwitchChannel {
 	}
 
 	public void createDefaultView() {
-		ChatView twitchView = new ChatView(name);
-		twitchView.addChannel(chatChannel);
-		twitchView.setOutgoingPrefix("/twitch #" + name.toLowerCase(Locale.ENGLISH) + " ");
-		ChatViewManager.addChatView(twitchView);
-		ChatViewManager.save();
+		if(chatChannel != null) {
+			ChatView twitchView = new ChatView(name);
+			twitchView.addChannel(chatChannel);
+			twitchView.setOutgoingPrefix("/twitch #" + name.toLowerCase(Locale.ENGLISH) + " ");
+			ChatViewManager.addChatView(twitchView);
+			ChatViewManager.save();
+		}
 	}
 }

@@ -169,7 +169,7 @@ public class TwitchManager {
 				addChannel(channel);
 			}
 		} catch (FileNotFoundException ignored) {
-		} catch (IOException e) {
+		} catch (Exception e) {
 			TwitchIntegration.logger.error("Could not load Twitch channel configurations: ", e);
 		}
 	}
