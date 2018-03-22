@@ -1,3 +1,18 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+    
+    maven {
+        url "https://minecraft.curseforge.com/api/maven/"
+    }
+}
+
+configurations {
+    provided
+    shade
+    compile.extendsFrom shade
+}
+
 idea {
     module {
         scopes.PROVIDED.plus += [configurations.provided]

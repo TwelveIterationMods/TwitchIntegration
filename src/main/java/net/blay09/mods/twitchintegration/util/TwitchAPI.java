@@ -111,7 +111,11 @@ public class TwitchAPI {
 		return result;
 	}
 
-	public static void listenForToken(final Runnable callback) {
+	public static String getAuthenticationURL() {
+		return TWITCH_AUTHORIZE.replace("{{CLIENT_ID}}", CLIENT_ID).replace("{{REDIRECT_URI}}", OAUTH_REDIRECT_URI);
+	}
+
+	public static boolean listenForToken(final Runnable callback) {
 		if (tokenReceiver == null) {
 			tokenReceiver = new TokenReceiver() {
 				@Override
@@ -124,12 +128,18 @@ public class TwitchAPI {
 			};
 			tokenReceiver.start();
 		}
+
+		String uri = getAuthenticationURL();
 		try {
 			Class<?> desktopClass = Class.forName("java.awt.Desktop");
 			Object desktop = desktopClass.getMethod("getDesktop").invoke(null);
-			desktopClass.getMethod("browse", URI.class).invoke(desktop, new URI(TWITCH_AUTHORIZE.replace("{{CLIENT_ID}}", CLIENT_ID).replace("{{REDIRECT_URI}}", OAUTH_REDIRECT_URI)));
+
+			desktopClass.getMethod("browse", URI.class).invoke(desktop, new URI(uri));
+			throw new URISyntaxException("fam", "why");
+			//return true;
 		} catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | URISyntaxException e) {
-			TwitchIntegration.logger.error("Could not open your browser - please copy the link into your browser manually.", e);
+			TwitchIntegration.logger.error("Could not open your browser - please copy the link into your browser manually: {}", uri);
+			return false;
 		}
 	}
 

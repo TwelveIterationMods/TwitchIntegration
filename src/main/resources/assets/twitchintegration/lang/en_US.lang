@@ -15,12 +15,15 @@ twitchintegration:gui.openToken.requiredPermissions=Required Permissions
 twitchintegration:gui.openToken.logIntoChat=Log into chat and send messages
 twitchintegration:gui.openToken.openedInBrowser=The Authentication page will be opened in your browser.
 twitchintegration:gui.openToken.authorize=Authorize Twitch Integration to use your account?
+twitchintegration:gui.openToken.copied=Copied!
 twitchintegration:gui.awaitingResponse.status=Status: %s
 twitchintegration:gui.awaitingResponse.pleaseWait=Please wait a moment.
 twitchintegration:gui.awaitingResponse.awaitingAuthorization=Awaiting authorization...
 twitchintegration:gui.awaitingResponse.requestingUsername=Requesting username...
 twitchintegration:gui.awaitingResponse.followInstructions=Please switch to your web browser and follow the instructions.
 twitchintegration.gui.no_leak_pls=Please do not show your browser on stream during authorization.
+twitchintegration.gui.browse_failed=Failed to open browser.
+twitchintegration.gui.browse_failed_hint=Use Copy to Clipboard and paste the link into your browser manually.
 
 twitchintegration.config.disconnect=Disconnect
 twitchintegration.config.disconnect.tooltip=(Dis-)connect from/to Twitch Chat

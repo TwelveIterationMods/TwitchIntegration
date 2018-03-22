@@ -12,7 +12,12 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-apply from: 'gradle/scripts/dependencies.gradle'
+configurations {
+    provided
+    shade
+    compile.extendsFrom shade
+}
+
 apply from: 'dependencies.gradle'
 
 apply from: 'gradle/scripts/common.gradle'
