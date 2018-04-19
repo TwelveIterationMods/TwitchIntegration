@@ -49,7 +49,7 @@ public class GuiTwitchAuthentication extends GuiScreen {
             @Override
             public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
                 if (super.mousePressed(mc, mouseX, mouseY)) {
-                    txtToken.setEnabled(isChecked());
+                    txtToken.setEnabled(!isChecked());
                     TwitchIntegrationConfig.useAnonymousLogin = isChecked();
                     return true;
                 }
@@ -85,6 +85,27 @@ public class GuiTwitchAuthentication extends GuiScreen {
         } else {
             super.actionPerformed(button);
         }
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        super.keyTyped(typedChar, keyCode);
+
+        this.txtToken.textboxKeyTyped(typedChar, keyCode);
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        txtToken.mouseClicked(mouseX, mouseY, mouseButton);
+
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+
+        txtToken.updateCursorCounter();
     }
 
     @Override
