@@ -135,8 +135,7 @@ public class TwitchAPI {
 			Object desktop = desktopClass.getMethod("getDesktop").invoke(null);
 
 			desktopClass.getMethod("browse", URI.class).invoke(desktop, new URI(uri));
-			throw new URISyntaxException("fam", "why");
-			//return true;
+			return true;
 		} catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | URISyntaxException e) {
 			TwitchIntegration.logger.error("Could not open your browser - please copy the link into your browser manually: {}", uri);
 			return false;
