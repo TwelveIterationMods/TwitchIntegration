@@ -58,7 +58,7 @@ processResources{
 
 reobf {
     jar {
-        extraLines "PK: net/blay09/javairc net/blay09/mods/bmc/twitchintegration/irc"
-        extraLines "PK: net/blay09/javatmi net/blay09/mods/bmc/twitchintegration/tmi"
+        extraLines "PK: net/blay09/javairc net/blay09/mods/twitchintegration/irc"
+        extraLines "PK: net/blay09/javatmi net/blay09/mods/twitchintegration/tmi"
     }
 }
