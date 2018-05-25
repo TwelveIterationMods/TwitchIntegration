@@ -25,4 +25,8 @@ public class TwitchIntegrationConfig {
 	@Config.Name("Do not store token")
 	@Config.Comment("Set this if you're on a public computer or concerned about security. You will have to re-authenticate every time you start Minecraft.")
 	public static boolean doNotStoreToken = false;
+
+	@Config.Name("User Blacklist")
+	@Config.Comment("Messages by these users will not display in chat. Useful to hide bots for example.")
+	public static String[] userBlacklist = new String[0];
 }
