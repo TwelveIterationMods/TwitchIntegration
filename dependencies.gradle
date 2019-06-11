@@ -1,4 +1,4 @@
 dependencies {
-    deobfCompile "chat-tweaks:ChatTweaks_1.12.2:5.1.9"
+    deobfCompile "chat-tweaks:ChatTweaks_1.12.2:5.1.21"
     shade fileTree(dir: 'lib', include: '*.jar')
 }

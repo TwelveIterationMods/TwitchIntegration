@@ -10,6 +10,7 @@ import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchEmote;
 import net.blay09.javatmi.TwitchUser;
 import net.blay09.javatmi.TwitchMessage;
+import net.blay09.mods.chattweaks.chat.emotes.twitch.*;
 import net.blay09.mods.twitchintegration.TwitchIntegration;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.chattweaks.ChatManager;
@@ -22,9 +23,6 @@ import net.blay09.mods.chattweaks.chat.emotes.EmoteScanner;
 import net.blay09.mods.chattweaks.chat.emotes.IEmote;
 import net.blay09.mods.chattweaks.chat.emotes.IEmoteScanner;
 import net.blay09.mods.chattweaks.chat.emotes.PositionedEmote;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchEmotesAPI;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchGlobalEmotes;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.TwitchSubscriberEmotes;
 import net.blay09.mods.chattweaks.image.ChatImage;
 import net.blay09.mods.chattweaks.image.ChatImageDefault;
 import net.blay09.mods.chattweaks.image.ChatImageEmote;
@@ -78,7 +76,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
     private final Comparator<PositionedEmote> emoteComparator = Comparator.comparingInt(PositionedEmote::getStart);
 
-    private final Predicate<IEmote> noTwitchEmotes = input -> !(input.getLoader() instanceof TwitchGlobalEmotes || input.getLoader() instanceof TwitchSubscriberEmotes);
+    private final Predicate<IEmote> noTwitchEmotes = input -> !(input.getSource() instanceof TwitchGlobalEmoteSource || input.getSource() instanceof TwitchChannelEmoteSource);
 
     private final IEmoteScanner emoteScanner = new EmoteScanner();
     private final Multimap<ChannelUser, ChatMessage> messages = ArrayListMultimap.create();

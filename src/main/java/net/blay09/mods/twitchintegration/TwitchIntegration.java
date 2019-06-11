@@ -1,13 +1,12 @@
 package net.blay09.mods.twitchintegration;
 
+import net.blay09.mods.chattweaks.chat.emotes.bttv.BTTVChannelEmotes;
+import net.blay09.mods.chattweaks.chat.emotes.ffz.FFZChannelEmotes;
 import net.blay09.mods.twitchintegration.handler.TwitchChannel;
 import net.blay09.mods.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.twitchintegration.handler.TwitchManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
 import net.blay09.mods.chattweaks.auth.TokenPair;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.BTTVChannelEmotes;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.FFZChannelEmotes;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
