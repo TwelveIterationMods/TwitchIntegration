@@ -153,6 +153,7 @@ public class TwitchAPI {
                 HttpClient httpClient = HttpClients.createDefault();
                 HttpGet request = new HttpGet(API_BASE_URL + "users");
                 request.addHeader("Authorization", "Bearer " + token);
+                request.addHeader("Client-ID", CLIENT_ID);
                 HttpResponse response = httpClient.execute(request);
                 String jsonString = EntityUtils.toString(response.getEntity());
                 JsonObject root = gson.fromJson(jsonString, JsonObject.class);
