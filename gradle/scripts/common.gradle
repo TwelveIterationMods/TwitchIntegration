@@ -5,6 +5,12 @@ repositories {
     maven {
         url "https://minecraft.curseforge.com/api/maven/"
     }
+    maven {
+        url 'https://artifactory.blay09.net/artifactory/libs-release'
+    }
+    maven {
+        url 'https://artifactory.blay09.net/artifactory/libs-snapshot'
+    }
 }
 
 configurations {

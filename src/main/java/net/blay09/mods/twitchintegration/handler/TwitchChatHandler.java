@@ -193,7 +193,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
             // Format Message
             ITextComponent senderComponent = formatSenderComponent(user, tmpBadges);
-            ITextComponent messageComponent = formatMessageComponent(message, twitchMessage.isAction);
+            ITextComponent messageComponent = formatMessageComponent(message, twitchMessage.isAction());
             ITextComponent textComponent = formatComponent(senderComponent, messageComponent, twitchMessage.isAction());
             ChatMessage chatMessage = ChatTweaks.createChatMessage(textComponent);
             chatMessage.setSender(senderComponent);

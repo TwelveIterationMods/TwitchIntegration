@@ -74,21 +74,23 @@ public class TwitchManager {
 		}
 
 		if(tokenPair != null || TwitchIntegrationConfig.useAnonymousLogin) {
-			IRCConfiguration.IRCConfigurationBuilder builder = TMIClient.defaultBuilder().debug(false);
+			IRCConfiguration config = TMIClient.defaultConfig();
+			config.setEncoding(StandardCharsets.UTF_8);
 			if (tokenPair != null && !TwitchIntegrationConfig.useAnonymousLogin) {
 				String token = tokenPair.getToken().startsWith("oauth:") ? tokenPair.getToken() : "oauth:" + tokenPair.getToken();
-				builder.nick(tokenPair.getUsername()).password(token);
+				config.setNick(tokenPair.getUsername());
+				config.setPassword(token);
 			} else {
-				builder.nick(getAnonymousUsername());
+				config.setNick(getAnonymousUsername());
 			}
-			builder.port(TwitchIntegrationConfig.port);
+			config.setPort(TwitchIntegrationConfig.port);
 			for (TwitchChannel channel : channels.values()) {
 				if (channel.isActive()) {
-					builder.autoJoinChannel("#" + channel.getName().toLowerCase(Locale.ENGLISH));
+					config.getAutoJoinChannels().add("#" + channel.getName().toLowerCase(Locale.ENGLISH));
 					activeChannels.add(channel);
 				}
 			}
-			twitchClient = new TMIClient(builder.build(), TwitchIntegration.getTwitchChatHandler());
+			twitchClient = new TMIClient(config, TwitchIntegration.getTwitchChatHandler());
 			twitchClient.connect();
 		}
 	}

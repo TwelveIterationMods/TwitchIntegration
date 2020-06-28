@@ -23,7 +23,7 @@ apply from: 'dependencies.gradle'
 apply from: 'gradle/scripts/common.gradle'
 apply from: 'gradle/scripts/with-api.gradle'
 
-def BUILD_NUMBER = System.getenv("BUILD_NUMBER") ?: "0"
+def BUILD_NUMBER = System.getenv("BUILD_NUMBER") ?: "16"
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
