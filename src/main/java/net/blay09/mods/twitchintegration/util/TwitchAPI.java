@@ -7,11 +7,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.auth.TokenReceiver;
-import net.blay09.mods.twitchintegration.gui.TwitchWaitingForUsernameScreen;
+import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.chat.TwitchBadge;
 import net.blay09.mods.twitchintegration.chat.TwitchChannel;
+import net.blay09.mods.twitchintegration.gui.screen.TwitchWaitingForUsernameScreen;
 import net.minecraft.client.Minecraft;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -19,7 +19,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -70,11 +69,11 @@ public class TwitchAPI {
                         String slashVal = version.getKey();
                         String imageUri = version.getValue().getAsJsonObject().get("image_url_1x").getAsString();
                         TwitchBadge badge = null;
-                        try {
+                        /* TODO try {
                             badge = new TwitchBadge(ImageLoader.loadImage(new URI(imageUri), "twitch_" + badgeName + "_" + slashVal), ITooltipProvider.EMPTY);
                         } catch (IOException | URISyntaxException e) {
                             TwitchChatIntegration.logger.error("Could not load global chat badge {}: ", badgeName, e);
-                        }
+                        }*/
                         result.put(badgeName + "/" + version.getKey(), badge);
                     }
                 }
@@ -99,11 +98,11 @@ public class TwitchAPI {
                         String slashVal = version.getKey();
                         String imageUri = version.getValue().getAsJsonObject().get("image_url_1x").getAsString();
                         TwitchBadge badge = null;
-                        try {
+                        /* TODO try {
                             badge = new TwitchBadge(ImageLoader.loadImage(new URI(imageUri), "twitch_" + channel.getName() + "_" + badgeName + "_" + slashVal), ITooltipProvider.EMPTY);
                         } catch (IOException | URISyntaxException e) {
                             TwitchChatIntegration.logger.error("Could not load chat badge {} for channel {}: ", badgeName, channel.getName(), e);
-                        }
+                        }*/
                         result.put(badgeName + "/" + version.getKey(), badge);
                     }
                 }

@@ -1,4 +1,4 @@
-package net.blay09.mods.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui.screen;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.blay09.mods.twitchintegration.TwitchChatIntegration;

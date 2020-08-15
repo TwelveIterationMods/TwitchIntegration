@@ -1,11 +1,8 @@
 package net.blay09.mods.twitchintegration.chat;
 
-import net.blay09.mods.chattweaks.image.ITooltipProvider;
-import net.blay09.mods.chattweaks.image.renderable.IChatRenderable;
-
 public class TwitchBadge {
 
-	private final IChatRenderable chatRenderable;
+	/*private final IChatRenderable chatRenderable;
 	private final ITooltipProvider tooltipProvider;
 
 	public TwitchBadge(IChatRenderable chatRenderable, ITooltipProvider tooltipProvider) {
@@ -20,6 +17,6 @@ public class TwitchBadge {
 
 	public ITooltipProvider getTooltipProvider() {
 		return tooltipProvider;
-	}
+	}*/
 
 }

@@ -1,4 +1,4 @@
-package net.blay09.mods.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui.widget;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;

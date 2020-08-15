@@ -1,4 +1,4 @@
-package net.blay09.mods.twitchintegration.gui;
+package net.blay09.mods.twitchintegration.gui.screen;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -7,17 +7,16 @@ import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.twitchintegration.TwitchManager;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthToken;
+import net.blay09.mods.twitchintegration.gui.widget.PasswordFieldWidget;
 import net.blay09.mods.twitchintegration.util.Messages;
 import net.blay09.mods.twitchintegration.util.TwitchAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.CheckboxButton;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Objects;
 
@@ -27,12 +26,10 @@ public class TwitchAuthenticationScreen extends Screen {
 
     private final Screen parentScreen;
 
-    private Button btnGetToken;
     private PasswordFieldWidget tokenTextField;
-    private Button btnConnect;
 
     public TwitchAuthenticationScreen(Screen parentScreen) {
-        super(new TranslationTextComponent("twitchchatintegration:gui.authentication.generateToken"));
+        super(Messages.lang("gui.authentication.generateToken"));
         this.parentScreen = parentScreen;
     }
 
@@ -40,7 +37,7 @@ public class TwitchAuthenticationScreen extends Screen {
     public void init() {
         super.init();
 
-        btnGetToken = new Button(width / 2 - 100, height / 2 - 25, 200, 20, Messages.lang("gui.authentication.generateToken", TextFormatting.GREEN), button -> {
+        Button getTokenButton = new Button(width / 2 - 100, height / 2 - 25, 200, 20, Messages.lang("gui.authentication.generateToken", TextFormatting.GREEN), button -> {
             Minecraft.getInstance().displayGuiScreen(new TwitchOpenTokenScreen(success -> {
                 final Minecraft mc = Minecraft.getInstance();
                 if (success) {
@@ -56,7 +53,7 @@ public class TwitchAuthenticationScreen extends Screen {
                 }
             }, TwitchAPI.getAuthenticationURL()));
         });
-        addButton(btnGetToken);
+        addButton(getTokenButton);
 
         tokenTextField = new PasswordFieldWidget(font, width / 2 - 100, height / 2 + 20, 200, 15, new StringTextComponent(""));
         TwitchAuthToken tokenPair = TwitchAuthManager.getAuthToken();
@@ -64,17 +61,19 @@ public class TwitchAuthenticationScreen extends Screen {
             tokenTextField.setText(tokenPair.getToken());
         }
         tokenTextField.setEnabled(!TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get());
+        this.addListener(tokenTextField);
+        this.setFocusedDefault(tokenTextField);
 
-        CheckboxButton chkAnonymous = new CheckboxButton(width / 2 - 100, height / 2 + 45, 16, 16, Messages.lang("gui.authentication.anonymousLogin"), TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get()) {
+        CheckboxButton anonymousLoginCheckbox = new CheckboxButton(width / 2 - 100, height / 2 + 45, 160, 20, Messages.lang("gui.authentication.anonymousLogin"), TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get()) {
             @Override
             public void onPress() {
                 super.onPress();
                 TwitchIntegrationConfig.CLIENT.useAnonymousLogin.set(isChecked());
             }
         };
-        addButton(chkAnonymous);
+        addButton(anonymousLoginCheckbox);
 
-        btnConnect = new Button(width / 2, height / 2 + 65, 100, 20, new TranslationTextComponent("twitchchatintegration:gui.authentication.connect"), button -> {
+        Button connectButton = new Button(width / 2, height / 2 + 70, 100, 20, Messages.lang("gui.authentication.connect"), button -> {
             TwitchAuthToken authToken = TwitchAuthManager.getAuthToken();
             if (!TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get() && (authToken == null || !authToken.getToken().equals(tokenTextField.getText()) || authToken.getUsername() == null)) {
                 Minecraft.getInstance().displayGuiScreen(new TwitchWaitingForUsernameScreen());
@@ -90,10 +89,10 @@ public class TwitchAuthenticationScreen extends Screen {
         });
 
         if (TwitchManager.isConnected()) {
-            btnConnect.setMessage(new TranslationTextComponent(TwitchChatIntegration.MOD_ID + ":gui.authentication.disconnect"));
+            connectButton.setMessage(Messages.lang("gui.authentication.disconnect"));
         }
 
-        addButton(btnConnect);
+        addButton(connectButton);
     }
 
     @Override
@@ -120,7 +119,7 @@ public class TwitchAuthenticationScreen extends Screen {
         RenderSystem.color4f(1f, 1f, 1f, 1f);
         Minecraft.getInstance().getTextureManager().bindTexture(twitchLogo);
         blit(matrixStack, width / 2 - 64, height / 2 - 80, 0, 0, 128, 43, 128, 43);
-        drawString(matrixStack, font, I18n.format(TwitchChatIntegration.MOD_ID + ":gui.authentication.chatToken"), width / 2 - 100, height / 2 + 5, 0xFFFFFF);
+        drawString(matrixStack, font, Messages.format("gui.authentication.chatToken"), width / 2 - 100, height / 2 + 5, 0xFFFFFF);
         tokenTextField.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 

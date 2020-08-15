@@ -16,4 +16,8 @@ public class TwitchAuthToken {
     public String getToken() {
         return token;
     }
+
+    public String getTmiPassword() {
+        return token.startsWith("oauth:") ? token : "oauth:" + token;
+    }
 }
