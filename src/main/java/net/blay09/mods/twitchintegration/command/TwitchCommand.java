@@ -3,8 +3,10 @@ package net.blay09.mods.twitchintegration.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchMessage;
+import net.blay09.javatmi.TwitchUser;
 import net.blay09.mods.twitchintegration.TwitchChannelManager;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.twitchintegration.TwitchManager;
@@ -20,6 +22,13 @@ import net.minecraftforge.common.util.FakePlayer;
 
 public class TwitchCommand {
 
+    private static final SuggestionProvider<CommandSource> whisperSuggestionProvider = (context, builder) -> {
+        for (TwitchUser user : TwitchManager.getTwitchChatHandler().getKnownWhisperUsers()) {
+            builder.suggest(user.getNick());
+        }
+        return builder.buildFuture();
+    };
+
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(Commands.literal("twitch").requires(it -> it.getEntity() instanceof PlayerEntity && !(it.getEntity() instanceof FakePlayer))
                 .then(Commands.literal("authenticate").executes(TwitchCommand::authenticateTwitch))
@@ -28,7 +37,7 @@ public class TwitchCommand {
                 .then(Commands.literal("leave")
                         .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::leaveChannel)))
                 .then(Commands.literal("whisper")
-                        .then(Commands.argument("user", StringArgumentType.string())
+                        .then(Commands.argument("user", StringArgumentType.string()).suggests(whisperSuggestionProvider)
                                 .then(Commands.argument("message", StringArgumentType.greedyString()).executes(TwitchCommand::sendWhisper))))
                 .then(Commands.literal("send")
                         .then(Commands.argument("channel", StringArgumentType.string())
@@ -86,7 +95,7 @@ public class TwitchCommand {
     private static int leaveChannel(CommandContext<CommandSource> context) {
         String channel = StringArgumentType.getString(context, "channel");
 
-        if(TwitchChannelManager.leaveChannel(channel)) {
+        if (TwitchChannelManager.leaveChannel(channel)) {
             return 1;
         } else {
             return 0;

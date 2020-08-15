@@ -22,6 +22,8 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -38,6 +40,8 @@ public class TwitchChatHandler extends TMIAdapter {
     private final IEmoteScanner emoteScanner = new EmoteScanner();*/
 
     private final ChatConsumer chatConsumer = new VanillaChatConsumer();
+
+    private final Map<String, TwitchUser> knownWhisperUsers = new HashMap<>();
 
     private final Multimap<ChannelUser, TwitchMessage> messages = ArrayListMultimap.create();
     private final Map<String, TwitchUser> usersByUsername = Maps.newHashMap();
@@ -195,6 +199,8 @@ public class TwitchChatHandler extends TMIAdapter {
 
     @Override
     public void onWhisperMessage(TMIClient client, TwitchUser user, String message) {
+        knownWhisperUsers.put(user.getNick(), user);
+
         onWhisperMessage(client, user, getOrCreateClientUser(client, null), message);
     }
 
@@ -289,4 +295,7 @@ public class TwitchChatHandler extends TMIAdapter {
         return usersByUsername.computeIfAbsent(username.toLowerCase(Locale.ENGLISH), k -> new TwitchUser(new IRCUser(username, null, null)));
     }
 
+    public Collection<TwitchUser> getKnownWhisperUsers() {
+        return knownWhisperUsers.values();
+    }
 }

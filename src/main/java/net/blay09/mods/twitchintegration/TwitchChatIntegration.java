@@ -16,6 +16,15 @@ import org.apache.logging.log4j.Logger;
 @Mod(TwitchChatIntegration.MOD_ID)
 public class TwitchChatIntegration {
 
+    // V1 Vanilla-only
+    // - Save and load the channels that were joined
+    // - Able to toggle enabled status of channels
+    // - Able to control configs of channels (subs only, deleted message handling)
+    // - Show channel name in front for VanillaCC if multiple are joined
+    // - Remaining TODOs
+    // V2 Chat Tweaks
+    // ...
+
     public static final String MOD_ID = "twitchchatintegration";
 
     public static Logger logger = LogManager.getLogger(MOD_ID);

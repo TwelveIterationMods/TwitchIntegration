@@ -25,7 +25,6 @@ public class TwitchManager {
     private static final List<TwitchChannel> joinedChannels = Lists.newArrayList();
     private static TMIClient twitchClient;
 
-
     @Nullable
     public static TMIClient getClient() {
         return twitchClient;
