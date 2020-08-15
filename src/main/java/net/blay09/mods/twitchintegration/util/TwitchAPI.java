@@ -5,14 +5,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.blay09.mods.chattweaks.ChatTweaks;
-import net.blay09.mods.chattweaks.image.ITooltipProvider;
-import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
-import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.twitchintegration.gui.GuiTwitchWaitingForUsername;
-import net.blay09.mods.twitchintegration.handler.TwitchBadge;
-import net.blay09.mods.twitchintegration.handler.TwitchChannel;
+import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
+import net.blay09.mods.twitchintegration.auth.TokenReceiver;
+import net.blay09.mods.twitchintegration.gui.TwitchWaitingForUsernameScreen;
+import net.blay09.mods.twitchintegration.chat.TwitchBadge;
+import net.blay09.mods.twitchintegration.chat.TwitchChannel;
 import net.minecraft.client.Minecraft;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -52,7 +51,7 @@ public class TwitchAPI {
                 }
             }
         } catch (Exception e) {
-            TwitchIntegration.logger.error("Unexpected error when retrieving channel id for {}: ", name, e);
+            TwitchChatIntegration.logger.error("Unexpected error when retrieving channel id for {}: ", name, e);
         }
         return -1;
     }
@@ -74,14 +73,14 @@ public class TwitchAPI {
                         try {
                             badge = new TwitchBadge(ImageLoader.loadImage(new URI(imageUri), "twitch_" + badgeName + "_" + slashVal), ITooltipProvider.EMPTY);
                         } catch (IOException | URISyntaxException e) {
-                            TwitchIntegration.logger.error("Could not load global chat badge {}: ", badgeName, e);
+                            TwitchChatIntegration.logger.error("Could not load global chat badge {}: ", badgeName, e);
                         }
                         result.put(badgeName + "/" + version.getKey(), badge);
                     }
                 }
             }
         } catch (Exception e) {
-            TwitchIntegration.logger.error("Unexpected error when loading global chat badges: ", e);
+            TwitchChatIntegration.logger.error("Unexpected error when loading global chat badges: ", e);
         }
         return result;
     }
@@ -103,14 +102,14 @@ public class TwitchAPI {
                         try {
                             badge = new TwitchBadge(ImageLoader.loadImage(new URI(imageUri), "twitch_" + channel.getName() + "_" + badgeName + "_" + slashVal), ITooltipProvider.EMPTY);
                         } catch (IOException | URISyntaxException e) {
-                            TwitchIntegration.logger.error("Could not load chat badge {} for channel {}: ", badgeName, channel.getName(), e);
+                            TwitchChatIntegration.logger.error("Could not load chat badge {} for channel {}: ", badgeName, channel.getName(), e);
                         }
                         result.put(badgeName + "/" + version.getKey(), badge);
                     }
                 }
             }
         } catch (Exception e) {
-            TwitchIntegration.logger.error("Unexpected error when loading chat badges for channel {}: ", channel.getName(), e);
+            TwitchChatIntegration.logger.error("Unexpected error when loading chat badges for channel {}: ", channel.getName(), e);
         }
         return result;
     }
@@ -124,8 +123,8 @@ public class TwitchAPI {
             tokenReceiver = new TokenReceiver() {
                 @Override
                 public void onTokenReceived(final String token) {
-                    Minecraft.getMinecraft().addScheduledTask(() -> {
-                        Minecraft.getMinecraft().displayGuiScreen(new GuiTwitchWaitingForUsername());
+                    Minecraft.getInstance().enqueue(() -> {
+                        Minecraft.getInstance().displayGuiScreen(new TwitchWaitingForUsernameScreen());
                         requestUsername(token, callback);
                     });
                 }
@@ -141,7 +140,7 @@ public class TwitchAPI {
             desktopClass.getMethod("browse", URI.class).invoke(desktop, new URI(uri));
             return true;
         } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | URISyntaxException e) {
-            TwitchIntegration.logger.error("Could not open your browser - please copy the link into your browser manually: {}", uri);
+            TwitchChatIntegration.logger.error("Could not open your browser - please copy the link into your browser manually: {}", uri);
             return false;
         }
     }
@@ -158,11 +157,11 @@ public class TwitchAPI {
                 String jsonString = EntityUtils.toString(response.getEntity());
                 JsonObject root = gson.fromJson(jsonString, JsonObject.class);
                 String username = root.getAsJsonArray("data").get(0).getAsJsonObject().get("login").getAsString();
-                ChatTweaks.getAuthManager().storeToken(TwitchIntegration.MOD_ID, username, token, TwitchIntegrationConfig.doNotStoreToken);
-                Minecraft.getMinecraft().addScheduledTask(callback);
+                TwitchAuthManager.setAuthToken(username, token, TwitchIntegrationConfig.CLIENT.doNotStoreToken.get());
+                Minecraft.getInstance().enqueue(callback);
             } catch (Exception e) {
                 String exceptionMessage = e.getMessage().replace(token, "<token>");
-                TwitchIntegration.logger.error("Failed to retrieve your username from the token. Please try again. {}", exceptionMessage);
+                TwitchChatIntegration.logger.error("Failed to retrieve your username from the token. Please try again. {}", exceptionMessage);
             }
         }).start();
     }

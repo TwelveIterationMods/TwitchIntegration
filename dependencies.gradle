@@ -1,5 +1,0 @@
-dependencies {
-    deobfCompile "net.blay09.mods:ChatTweaks_1.12.2:5.1.24"
-    shade "net.blay09:javairc:0.1.0-SNAPSHOT"
-    shade "net.blay09:javatmi:0.1.0-SNAPSHOT"
-}

@@ -1,0 +1,14 @@
+modLoader="javafml"
+loaderVersion="[24,)"
+issueTrackerURL="https://github.com/blay09/TwitchIntegration/issues"
+displayURL="https://minecraft.curseforge.com/projects/twitch-chat-integration"
+authors="BlayTheNinth"
+license="MIT"
+
+[[mods]]
+modId="twitchchatintegration"
+version="${file.jarVersion}"
+displayName="Twitch Chat Integration"
+description='''
+Brings your Twitch chat into Minecraft.
+'''

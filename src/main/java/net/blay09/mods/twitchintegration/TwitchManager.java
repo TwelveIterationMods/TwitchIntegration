@@ -1,4 +1,4 @@
-package net.blay09.mods.twitchintegration.handler;
+package net.blay09.mods.twitchintegration;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,13 +9,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import net.blay09.javairc.IRCConfiguration;
 import net.blay09.javatmi.TMIClient;
-import net.blay09.mods.twitchintegration.TwitchIntegration;
-import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
-import net.blay09.mods.chattweaks.ChatViewManager;
-import net.blay09.mods.chattweaks.auth.TokenPair;
-import net.blay09.mods.chattweaks.chat.ChatView;
+import net.blay09.mods.twitchintegration.chat.TwitchChannel;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -33,33 +28,33 @@ import java.util.Map;
 
 public class TwitchManager {
 
-	private final File configFile;
-	private final Map<String, TwitchChannel> channels = Maps.newHashMap();
-	private final List<TwitchChannel> activeChannels = Lists.newArrayList();
-	private TMIClient twitchClient;
+	private static final Map<String, TwitchChannel> channels = Maps.newHashMap();
+	private static final List<TwitchChannel> activeChannels = Lists.newArrayList();
+	private static TMIClient twitchClient;
 
-	public TwitchManager(File configFile) {
+	public static void load(File configDir) {
+		File configFile = new File(configDir, "twitch_channels.json")
 		this.configFile = configFile;
 		loadChannels();
 	}
 
-	public void addChannel(TwitchChannel channel) {
+	public static void addChannel(TwitchChannel channel) {
 		channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
 		channel.loadChannelBadges();
-		TwitchIntegration.loadChannelEmotes(channel);
+		TwitchChatIntegration.loadChannelEmotes(channel);
 	}
 
-	public Collection<TwitchChannel> getChannels() {
+	public static Collection<TwitchChannel> getChannels() {
 		return channels.values();
 	}
 
 	@Nullable
-	public TMIClient getClient() {
+	public static TMIClient getClient() {
 		return twitchClient;
 	}
 
-	public void connect() {
-		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
+	public static void connect() {
+		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchChatIntegration.MOD_ID);
 
 		if (tokenPair != null && !channels.containsKey(tokenPair.getUsername().toLowerCase(Locale.ENGLISH))) {
 			TwitchChannel[] defaultChannels = createDefaults();
@@ -90,7 +85,7 @@ public class TwitchManager {
 					activeChannels.add(channel);
 				}
 			}
-			twitchClient = new TMIClient(config, TwitchIntegration.getTwitchChatHandler());
+			twitchClient = new TMIClient(config, TwitchChatIntegration.getTwitchChatHandler());
 			twitchClient.connect();
 		}
 	}
@@ -99,7 +94,7 @@ public class TwitchManager {
 		return "justinfan" + (int) (Math.floor(Math.random() * 80000.0D + 1000.0D));
 	}
 
-	public void disconnect() {
+	public static void disconnect() {
 		if (twitchClient != null) {
 			twitchClient.disconnect();
 			activeChannels.clear();
@@ -107,11 +102,11 @@ public class TwitchManager {
 		}
 	}
 
-	public boolean isConnected() {
+	public static boolean isConnected() {
 		return twitchClient != null && twitchClient.getIRCConnection().isConnected();
 	}
 
-	public void updateChannelStates() {
+	public static void updateChannelStates() {
 		// Leave channels if they were removed
 		for (TwitchChannel channel : activeChannels) {
 			if (!channels.containsKey(channel.getName().toLowerCase(Locale.ENGLISH))) {
@@ -143,11 +138,11 @@ public class TwitchManager {
 	}
 
 	@Nullable
-	public TwitchChannel getTwitchChannel(String channel) {
+	public static TwitchChannel getTwitchChannel(String channel) {
 		return channels.get(channel.charAt(0) == '#' ? channel.substring(1).toLowerCase(Locale.ENGLISH) : channel.toLowerCase(Locale.ENGLISH));
 	}
 
-	public void removeTwitchChannel(TwitchChannel channel) {
+	public static void removeTwitchChannel(TwitchChannel channel) {
 		if(channel.getChatChannel() != null) {
 			ChatManager.removeChatChannel(channel.getChatChannel().getName());
 		}
@@ -159,7 +154,7 @@ public class TwitchManager {
 		}
 	}
 
-	public void loadChannels() {
+	public static void loadChannels() {
 		Gson gson = new Gson();
 		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(configFile), StandardCharsets.UTF_8)) {
 			JsonObject root = gson.fromJson(reader, JsonObject.class);
@@ -172,11 +167,11 @@ public class TwitchManager {
 			}
 		} catch (FileNotFoundException ignored) {
 		} catch (Exception e) {
-			TwitchIntegration.logger.error("Could not load Twitch channel configurations: ", e);
+			TwitchChatIntegration.logger.error("Could not load Twitch channel configurations: ", e);
 		}
 	}
 
-	public void saveChannels() {
+	public static void saveChannels() {
 		JsonObject root = new JsonObject();
 		JsonArray channels = new JsonArray();
 		for (TwitchChannel channel : this.channels.values()) {
@@ -188,12 +183,12 @@ public class TwitchManager {
 			writer.setIndent("  ");
 			gson.toJson(root, writer);
 		} catch (IOException e) {
-			TwitchIntegration.logger.error("Could not save Twitch channel configurations: ", e);
+			TwitchChatIntegration.logger.error("Could not save Twitch channel configurations: ", e);
 		}
 	}
 
-	public TwitchChannel[] createDefaults() {
-		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchIntegration.MOD_ID);
+	public static TwitchChannel[] createDefaults() {
+		TokenPair tokenPair = ChatTweaks.getAuthManager().getToken(TwitchChatIntegration.MOD_ID);
 		if (tokenPair != null) {
 			TwitchChannel defaultChannel = new TwitchChannel(tokenPair.getUsername());
 			defaultChannel.setActive(true);
@@ -202,11 +197,11 @@ public class TwitchManager {
 		return new TwitchChannel[0];
 	}
 
-	public void removeAllChannels() {
+	public static void removeAllChannels() {
 		channels.clear();
 	}
 
-	public void renameTwitchChannel(TwitchChannel twitchChannel, String newName) {
+	public static void renameTwitchChannel(TwitchChannel twitchChannel, String newName) {
 		removeTwitchChannel(twitchChannel);
 		twitchChannel.setName(newName);
 		addChannel(twitchChannel);

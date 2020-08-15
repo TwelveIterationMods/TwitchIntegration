@@ -1,9 +1,9 @@
-package net.blay09.mods.twitchintegration.handler;
+package net.blay09.mods.twitchintegration.chat;
 
 import com.google.gson.JsonObject;
 import net.blay09.mods.chattweaks.image.ITooltipProvider;
 import net.blay09.mods.chattweaks.image.renderable.ImageLoader;
-import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.util.TwitchAPI;
 import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatViewManager;
@@ -50,7 +50,7 @@ public class TwitchChannel {
 		}
 		chatChannel = ChatManager.getChatChannel(name);
 		if(chatChannel == null) {
-			chatChannel = new ChatChannel(name, "Twitch Chat for '" + name + "'", new ResourceLocation(TwitchIntegration.MOD_ID, "icon.png"));
+			chatChannel = new ChatChannel(name, "Twitch Chat for '" + name + "'", new ResourceLocation(TwitchChatIntegration.MOD_ID, "icon.png"));
 			ChatManager.addChatChannel(chatChannel);
 		}
 	}

@@ -1,32 +1,65 @@
 package net.blay09.mods.twitchintegration;
 
-import net.minecraftforge.common.config.Config;
+import com.google.common.collect.Lists;
+import net.minecraftforge.common.ForgeConfigSpec;
+import org.apache.commons.lang3.tuple.Pair;
 
-@Config(modid = TwitchIntegration.MOD_ID, type = Config.Type.INSTANCE)
-@Config.LangKey("twitchintegration.config")
+import java.util.List;
+
 public class TwitchIntegrationConfig {
 
-	@Config.Name("Use Anonymous Login")
-	@Config.Comment("If you login anonymously you can read chat, but you will not be able to type to Twitch chat from within Minecraft.")
-	public static boolean useAnonymousLogin = false;
+    public static class Client {
 
-	@Config.Name("Show Whispers")
-	public static boolean showWhispers = false;
+        public final ForgeConfigSpec.BooleanValue useAnonymousLogin;
+        public final ForgeConfigSpec.BooleanValue showWhispers;
+        public final ForgeConfigSpec.BooleanValue disableUserColors;
+        public final ForgeConfigSpec.BooleanValue disableNameBadges;
+        public final ForgeConfigSpec.BooleanValue doNotStoreToken;
+        public final ForgeConfigSpec.IntValue port;
+        public final ForgeConfigSpec.ConfigValue<List<? extends String>> userBlacklist;
 
-	@Config.Name("Port")
-	public static int port = 6667;
+        Client(ForgeConfigSpec.Builder builder) {
+            useAnonymousLogin = builder
+                    .comment("If you login anonymously you can read chat, but you will not be able to type to Twitch chat from within Minecraft.")
+                    .translation("config.twitchchatintegration.useAnonymousLogin")
+                    .define("useAnonymousLogin", false);
 
-	@Config.Name("Disable User Colors")
-	public static boolean disableUserColors = false;
+            showWhispers = builder
+                    .translation("config.twitchchatintegration.showWhispers")
+                    .define("showWhispers", false);
 
-	@Config.Name("Disable Name Badges")
-	public static boolean disableNameBadges = false;
+            disableUserColors = builder
+                    .translation("config.twitchchatintegration.disableUserColors")
+                    .define("disableUserColors", false);
 
-	@Config.Name("Do not store token")
-	@Config.Comment("Set this if you're on a public computer or concerned about security. You will have to re-authenticate every time you start Minecraft.")
-	public static boolean doNotStoreToken = false;
+            disableNameBadges = builder
+                    .translation("config.twitchchatintegration.disableNameBadges")
+                    .define("disableNameBadges", false);
 
-	@Config.Name("User Blacklist")
-	@Config.Comment("Messages by these users will not display in chat. Useful to hide bots for example.")
-	public static String[] userBlacklist = new String[0];
+            doNotStoreToken = builder
+                    .comment("Set this if you're on a public computer or concerned about security. You will have to re-authenticate every time you start Minecraft.")
+                    .translation("config.twitchchatintegration.doNotStoreToken")
+                    .define("doNotStoreToken", false);
+
+            port = builder
+                    .translation("config.twitchchatintegration.port")
+                    .defineInRange("port", 6667, Integer.MIN_VALUE, Integer.MAX_VALUE);
+
+            userBlacklist = builder
+                    .comment("Messages by these users will not display in chat. Useful to hide bots for example.")
+                    .translation("config.twitchchatintegration.userBlacklist")
+                    .defineList("userBlacklist", Lists.newArrayList(), it -> it instanceof String);
+        }
+
+    }
+
+    static final ForgeConfigSpec clientSpec;
+    public static final TwitchIntegrationConfig.Client CLIENT;
+
+    static {
+        final Pair<TwitchIntegrationConfig.Client, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(TwitchIntegrationConfig.Client::new);
+        clientSpec = specPair.getRight();
+        CLIENT = specPair.getLeft();
+    }
+
 }

@@ -3,33 +3,20 @@ package net.blay09.mods.twitchintegration.handler;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchEmote;
 import net.blay09.javatmi.TwitchUser;
 import net.blay09.javatmi.TwitchMessage;
-import net.blay09.mods.chattweaks.chat.emotes.twitch.*;
-import net.blay09.mods.twitchintegration.TwitchIntegration;
+import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.chattweaks.ChatManager;
 import net.blay09.mods.chattweaks.ChatTweaks;
-import net.blay09.mods.chattweaks.ChatViewManager;
-import net.blay09.mods.chattweaks.chat.ChatChannel;
-import net.blay09.mods.chattweaks.chat.ChatMessage;
-import net.blay09.mods.chattweaks.chat.ChatView;
-import net.blay09.mods.chattweaks.chat.emotes.EmoteScanner;
-import net.blay09.mods.chattweaks.chat.emotes.IEmote;
-import net.blay09.mods.chattweaks.chat.emotes.IEmoteScanner;
-import net.blay09.mods.chattweaks.chat.emotes.PositionedEmote;
-import net.blay09.mods.chattweaks.image.ChatImage;
-import net.blay09.mods.chattweaks.image.ChatImageDefault;
-import net.blay09.mods.chattweaks.image.ChatImageEmote;
+import net.blay09.mods.twitchintegration.TwitchManager;
+import net.blay09.mods.twitchintegration.chat.TwitchBadge;
+import net.blay09.mods.twitchintegration.chat.TwitchChannel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.ForgeHooks;
 
@@ -98,7 +85,7 @@ public class TwitchChatHandler extends TMIAdapter {
     }
 
     public void onTwitchChat(final TMIClient client, final String channel, final TwitchUser user, final TwitchMessage twitchMessage) {
-        Minecraft.getMinecraft().addScheduledTask(() -> {
+        Minecraft.getInstance().addScheduledTask(() -> {
             TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
 
             // If subscriber-only chat is enabled client-side, ignore messages from non-subscribers
@@ -231,7 +218,7 @@ public class TwitchChatHandler extends TMIAdapter {
     public void onSubscribe(TMIClient client, final String channel, final String username, final boolean prime) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
-            ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + (prime ? ":chat.subscribePrime" : ":chat.subscribe"), username), twitchChannel != null ? twitchChannel.getChatChannel() : null);
+            ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchChatIntegration.MOD_ID + (prime ? ":chat.subscribePrime" : ":chat.subscribe"), username), twitchChannel != null ? twitchChannel.getChatChannel() : null);
         });
     }
 
@@ -239,7 +226,7 @@ public class TwitchChatHandler extends TMIAdapter {
     public void onResubscribe(TMIClient client, final String channel, final TwitchUser user, final int months, String message) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             TwitchChannel twitchChannel = twitchManager.getTwitchChannel(channel);
-            ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchIntegration.MOD_ID + ":chat.resubscribe", user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getChatChannel() : null);
+            ChatTweaks.addChatMessage(new TextComponentTranslation(TwitchChatIntegration.MOD_ID + ":chat.resubscribe", user.getDisplayName(), months), twitchChannel != null ? twitchChannel.getChatChannel() : null);
         });
         if (message != null) {
             onTwitchChat(client, channel, user, new TwitchMessage(message, -1, false, 0));
@@ -382,7 +369,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
     @Override
     public void onUnhandledException(TMIClient client, final Exception e) {
-        TwitchIntegration.logger.error("Unhandled exception: ", e);
+        TwitchChatIntegration.logger.error("Unhandled exception: ", e);
         Minecraft.getMinecraft().addScheduledTask(() -> {
             if (Minecraft.getMinecraft().player != null) {
                 Minecraft.getMinecraft().player.sendStatusMessage(new TextComponentString(TextFormatting.RED + "Twitch Integration encountered an unhandled exception. The connection has been terminated. Please review your log files and let the mod developer know."), false);
