@@ -1,6 +1,8 @@
 {
     "twitchchatintegration.chat.message": "%s: %s",
     "twitchchatintegration.chat.action": "%s %s",
+    "twitchchatintegration.chat.whisper.message": "(whisper) %s: %s",
+    "twitchchatintegration.chat.whisper.action": "(whisper) %s %s",
     "twitchchatintegration.chat.subscribe": "%s just subscribed!",
     "twitchchatintegration.chat.subscribePrime": "%s just subscribed with Twitch Prime!",
     "twitchchatintegration.chat.resubscribe": "%s has subscribed for %d months in a row!",

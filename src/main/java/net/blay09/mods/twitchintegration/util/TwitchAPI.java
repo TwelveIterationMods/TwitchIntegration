@@ -19,16 +19,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 public class TwitchAPI {
 
     public static final String CLIENT_ID = "10napoemcms7qf9j0dxf28ndl2ltc3";
     public static final String OAUTH_REDIRECT_URI = "http://localhost:" + TokenReceiver.PORT + "/token/";
-    public static final String SCOPES = "chat:read+chat:edit";
+    public static final String SCOPES = "chat:read+chat:edit+whispers:edit";
     private static final String API_BASE_URL = "https://api.twitch.tv/helix/";
     private static final String TWITCH_AUTHORIZE = "https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={{CLIENT_ID}}&redirect_uri={{REDIRECT_URI}}&scope={{SCOPES}}&force_verify=true";
 

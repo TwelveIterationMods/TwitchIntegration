@@ -3,6 +3,7 @@ package net.blay09.mods.twitchintegration;
 import com.google.common.collect.Lists;
 import net.blay09.javairc.IRCConfiguration;
 import net.blay09.javatmi.TMIClient;
+import net.blay09.mods.twitchintegration.api.event.TwitchChannelAddedEvent;
 import net.blay09.mods.twitchintegration.api.event.TwitchChannelRemovedEvent;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthToken;
@@ -79,10 +80,22 @@ public class TwitchManager {
     }
 
     @SubscribeEvent
-    public static void onTwitchChannelRemoved(TwitchChannelRemovedEvent event) {
-        if (joinedChannels.remove(event.getTwitchChannel())) {
+    public static void onTwitchChannelAdded(TwitchChannelAddedEvent event) {
+        final TwitchChannel channel = event.getTwitchChannel();
+        if (!joinedChannels.contains(channel)) {
             if (twitchClient != null) {
-                twitchClient.part("#" + event.getTwitchChannel().getName().toLowerCase(Locale.ENGLISH));
+                twitchClient.join("#" + channel.getName().toLowerCase(Locale.ENGLISH));
+                joinedChannels.add(channel);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onTwitchChannelRemoved(TwitchChannelRemovedEvent event) {
+        final TwitchChannel channel = event.getTwitchChannel();
+        if (joinedChannels.remove(channel)) {
+            if (twitchClient != null) {
+                twitchClient.part("#" + channel.getName().toLowerCase(Locale.ENGLISH));
             }
         }
     }

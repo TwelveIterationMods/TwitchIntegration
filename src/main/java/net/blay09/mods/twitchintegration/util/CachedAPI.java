@@ -2,7 +2,6 @@ package net.blay09.mods.twitchintegration.util;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import net.blay09.mods.chattweaks.ChatTweaks;
 import net.minecraft.client.Minecraft;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -10,11 +9,16 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.*;
 
 public class CachedAPI {
+
+    private static final Logger logger = LogManager.getLogger();
+
     private static final Gson gson = new Gson();
     private static final HttpClient httpClient = HttpClients.createDefault();
     private static final long DEFAULT_CACHE_TIME = 86400000L;
@@ -30,12 +34,12 @@ public class CachedAPI {
     }
 
     @Nullable
-    public static JsonObject loadCachedAPI(HttpGet request, String fileName, long maxCacheTime) {
+    private static JsonObject loadCachedAPI(HttpGet request, String fileName, long maxCacheTime) {
         return loadCachedAPI(request, new File(getCacheDirectory(), fileName), maxCacheTime);
     }
 
     @Nullable
-    public static JsonObject loadCachedAPI(HttpGet request, File cacheFile, long maxCacheTime) {
+    private static JsonObject loadCachedAPI(HttpGet request, File cacheFile, long maxCacheTime) {
         JsonObject result = loadLocal(cacheFile, false, maxCacheTime);
         if (result == null) {
             result = loadRemote(request);
@@ -45,7 +49,7 @@ public class CachedAPI {
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(cacheFile))) {
                     gson.toJson(result, writer);
                 } catch (IOException e) {
-                    ChatTweaks.logger.error("An error occurred trying to cache an API result: ", e);
+                    logger.error("An error occurred trying to cache an API result: ", e);
                 }
             }
         }
@@ -58,7 +62,7 @@ public class CachedAPI {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 return gson.fromJson(reader, JsonObject.class);
             } catch (IOException e) {
-                ChatTweaks.logger.error("An error occurred trying to load a cached API result: ", e);
+                logger.error("An error occurred trying to load a cached API result: ", e);
             }
         }
         return null;
@@ -79,12 +83,12 @@ public class CachedAPI {
                     exceptionMessage = exceptionMessage.replace(authHeaderPart, "<secret>");
                 }
             }
-            ChatTweaks.logger.error("An error occurred trying to load from an API: {}", exceptionMessage);
+            logger.error("An error occurred trying to load from an API: {}", exceptionMessage);
             return null;
         }
     }
 
-    public static File getCacheDirectory() {
+    private static File getCacheDirectory() {
         File file = new File(Minecraft.getInstance().gameDir, "ChatTweaks/cache/");
         if (!file.exists() && !file.mkdirs()) {
             throw new RuntimeException("Could not create cache directory for Chat Tweaks.");

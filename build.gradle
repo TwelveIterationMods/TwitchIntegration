@@ -47,7 +47,7 @@ dependencies {
             name   : "forge",
             version: "${minecraft_version}-${forge_version}"
     ])
-    implementation fg.deobf("net.blay09.mods:ChatTweaks_1.16.2:6.0.0")
+    //implementation fg.deobf("net.blay09.mods:ChatTweaks_1.16.2:6.0.0")
 
     implementation "net.blay09:javairc:0.1.0-SNAPSHOT"
     shade "net.blay09:javairc:0.1.0-SNAPSHOT"

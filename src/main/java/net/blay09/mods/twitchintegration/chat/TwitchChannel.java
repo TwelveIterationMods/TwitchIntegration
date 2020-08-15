@@ -1,18 +1,9 @@
 package net.blay09.mods.twitchintegration.chat;
 
 import com.google.gson.JsonObject;
-import net.blay09.mods.chattweaks.api.ChatChannel;
-import net.blay09.mods.chattweaks.api.ChatView;
-import net.blay09.mods.chattweaks.core.ChatChannelImpl;
-import net.blay09.mods.chattweaks.core.ChatManager;
-import net.blay09.mods.chattweaks.core.ChatViewImpl;
-import net.blay09.mods.chattweaks.core.ChatViewManager;
-import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.util.TwitchAPI;
-import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
-import java.util.Locale;
 import java.util.Map;
 
 public class TwitchChannel {
@@ -33,7 +24,6 @@ public class TwitchChannel {
     }
 
     private String name;
-    private ChatChannel chatChannel;
     private boolean subscribersOnly;
     private DeletedMessages deletedMessages = DeletedMessages.Replace;
     private boolean enabled = true;
@@ -44,20 +34,8 @@ public class TwitchChannel {
         this.name = name;
     }
 
-    public void createOrUpdateChatChannel() {
-        if (chatChannel != null && !chatChannel.getName().equalsIgnoreCase(name)) {
-            ChatManager.removeChatChannel(chatChannel.getName());
-        }
-        chatChannel = ChatManager.getChatChannel(name);
-        if (chatChannel == null) {
-            chatChannel = new ChatChannelImpl(name, "Twitch Chat for '" + name + "'", new ResourceLocation(TwitchChatIntegration.MOD_ID, "icon.png"), null);
-            ChatManager.addChatChannel(chatChannel);
-        }
-    }
-
     public void setName(String name) {
         this.name = name;
-        createOrUpdateChatChannel();
     }
 
     public int getId() {
@@ -94,14 +72,6 @@ public class TwitchChannel {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        if (chatChannel != null) {
-            // TODO chatChannel.setEnabled(active);
-        }
-    }
-
-    @Nullable
-    public ChatChannel getChatChannel() {
-        return chatChannel;
     }
 
     public JsonObject toJson() {
@@ -152,12 +122,4 @@ public class TwitchChannel {
         return badge;
     }
 
-    public void createDefaultView() {
-        if (chatChannel != null) {
-            ChatView twitchView = new ChatViewImpl(name);
-            twitchView.addChannel(chatChannel.getName());
-            twitchView.setOutgoingPrefix("/twitch send " + name.toLowerCase(Locale.ENGLISH) + " ");
-            ChatViewManager.registerView(twitchView);
-        }
-    }
 }

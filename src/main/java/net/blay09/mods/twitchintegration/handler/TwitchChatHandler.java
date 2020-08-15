@@ -14,6 +14,7 @@ import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.twitchintegration.TwitchManager;
 import net.blay09.mods.twitchintegration.api.ChatConsumer;
 import net.blay09.mods.twitchintegration.chat.TwitchChannel;
+import net.blay09.mods.twitchintegration.compat.vanilla.VanillaChatConsumer;
 import net.blay09.mods.twitchintegration.util.Messages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.StringTextComponent;
@@ -65,7 +66,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
     private void onTwitchChat(final TMIClient client, final String channel, final TwitchUser user, final TwitchMessage twitchMessage) {
         Minecraft.getInstance().enqueue(() -> {
-            TwitchChannel twitchChannel = TwitchChannelManager.getTwitchChannel(channel);
+            TwitchChannel twitchChannel = TwitchChannelManager.getChannel(channel);
 
             // If subscriber-only chat is enabled client-side, ignore messages from non-subscribers
             if (twitchChannel != null && twitchChannel.isSubscribersOnly() && !user.isSubscriber() && !user.isMod()) {
@@ -174,8 +175,8 @@ public class TwitchChatHandler extends TMIAdapter {
     @Override
     public void onSubscribe(TMIClient client, final String channel, final String username, final boolean prime) {
         Minecraft.getInstance().enqueue(() -> {
-            TwitchChannel twitchChannel = TwitchChannelManager.getTwitchChannel(channel);
-            final TranslationTextComponent subscribeText = Messages.lang((prime ? "chat.subscribePrime" : "chat.subscribe"), null, username);
+            TwitchChannel twitchChannel = TwitchChannelManager.getChannel(channel);
+            final TranslationTextComponent subscribeText = Messages.styledLang((prime ? "chat.subscribePrime" : "chat.subscribe"), TextFormatting.YELLOW, username);
             chatConsumer.onSystemMessage(twitchChannel, subscribeText);
         });
     }
@@ -183,8 +184,8 @@ public class TwitchChatHandler extends TMIAdapter {
     @Override
     public void onResubscribe(TMIClient client, final String channel, final TwitchUser user, final int months, String message) {
         Minecraft.getInstance().enqueue(() -> {
-            TwitchChannel twitchChannel = TwitchChannelManager.getTwitchChannel(channel);
-            final TranslationTextComponent resubscribeText = Messages.lang("chat.resubscribe", null, user.getDisplayName(), months);
+            TwitchChannel twitchChannel = TwitchChannelManager.getChannel(channel);
+            final TranslationTextComponent resubscribeText = Messages.styledLang("chat.resubscribe", TextFormatting.YELLOW, user.getDisplayName(), months);
             chatConsumer.onSystemMessage(twitchChannel, resubscribeText);
         });
         if (message != null) {
@@ -194,7 +195,7 @@ public class TwitchChatHandler extends TMIAdapter {
 
     @Override
     public void onWhisperMessage(TMIClient client, TwitchUser user, String message) {
-        onWhisperMessage(client, user, getThisUser(client, null), message);
+        onWhisperMessage(client, user, getOrCreateClientUser(client, null), message);
     }
 
     public void onWhisperMessage(final TMIClient client, final TwitchUser user, final TwitchUser receiver, final String message) {
@@ -246,7 +247,7 @@ public class TwitchChatHandler extends TMIAdapter {
     @Override
     public void onTimeout(TMIClient client, final String channel, final String username) {
         Minecraft.getInstance().enqueue(() -> {
-            TwitchChannel twitchChannel = TwitchChannelManager.getTwitchChannel(channel);
+            TwitchChannel twitchChannel = TwitchChannelManager.getChannel(channel);
             if (twitchChannel != null) {
                 chatConsumer.purgeUserMessages(twitchChannel, new ChannelUser(channel, username));
             }
@@ -256,7 +257,7 @@ public class TwitchChatHandler extends TMIAdapter {
     @Override
     public void onClearChat(TMIClient client, final String channel) {
         Minecraft.getInstance().enqueue(() -> {
-            final TwitchChannel twitchChannel = TwitchChannelManager.getTwitchChannel(channel);
+            final TwitchChannel twitchChannel = TwitchChannelManager.getChannel(channel);
             chatConsumer.clearChat(twitchChannel);
         });
     }
@@ -272,7 +273,7 @@ public class TwitchChatHandler extends TMIAdapter {
         TwitchManager.disconnect();
     }
 
-    public TwitchUser getThisUser(TMIClient client, String channel) {
+    public TwitchUser getOrCreateClientUser(TMIClient client, String channel) {
         if (channel == null) {
             channel = !usersByChannel.isEmpty() ? usersByChannel.keySet().iterator().next() : "";
         }
@@ -288,15 +289,4 @@ public class TwitchChatHandler extends TMIAdapter {
         return usersByUsername.computeIfAbsent(username.toLowerCase(Locale.ENGLISH), k -> new TwitchUser(new IRCUser(username, null, null)));
     }
 
-    /* TODO public int getAcceptableNameColor(int color) {
-        int red = (color >> 16 & 255);
-        int green = (color >> 8 & 255);
-        int blue = (color & 255);
-        Color.RGBtoHSB(red, green, blue, tmpHSB);
-        float brightness = tmpHSB[2];
-        if (brightness < 0.4f) {
-            brightness = 0.4f;
-        }
-        return Color.HSBtoRGB(tmpHSB[0], tmpHSB[1], brightness);
-    }*/
 }

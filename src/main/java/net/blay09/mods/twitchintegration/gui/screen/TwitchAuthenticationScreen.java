@@ -20,6 +20,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class TwitchAuthenticationScreen extends Screen {
@@ -30,7 +31,7 @@ public class TwitchAuthenticationScreen extends Screen {
 
     private PasswordFieldWidget tokenTextField;
 
-    public TwitchAuthenticationScreen(Screen parentScreen) {
+    public TwitchAuthenticationScreen(@Nullable Screen parentScreen) {
         super(Messages.lang("gui.authentication.generateToken"));
         this.parentScreen = parentScreen;
     }
