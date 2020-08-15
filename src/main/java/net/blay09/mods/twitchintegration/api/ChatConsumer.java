@@ -7,7 +7,7 @@ import net.blay09.mods.twitchintegration.handler.ChannelUser;
 import net.minecraft.util.text.ITextComponent;
 
 public interface ChatConsumer {
-    void onChatMessage(TwitchChannel channel, TwitchMessage message);
+    void onChatMessage(TwitchChannel channel, TwitchUser user, TwitchMessage message);
     void onSystemMessage(TwitchChannel channel, ITextComponent message);
     void onWhisperMessage(TwitchUser user, TwitchMessage message);
 

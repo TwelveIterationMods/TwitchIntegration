@@ -117,7 +117,7 @@ public class TwitchAPI {
         return TWITCH_AUTHORIZE.replace("{{CLIENT_ID}}", CLIENT_ID).replace("{{REDIRECT_URI}}", OAUTH_REDIRECT_URI).replace("{{SCOPES}}", SCOPES);
     }
 
-    public static boolean listenForToken(final Runnable callback) {
+    public static String listenForToken(final Runnable callback) {
         if (tokenReceiver == null) {
             tokenReceiver = new TokenReceiver() {
                 @Override
@@ -131,17 +131,7 @@ public class TwitchAPI {
             tokenReceiver.start();
         }
 
-        String uri = getAuthenticationURL();
-        try {
-            Class<?> desktopClass = Class.forName("java.awt.Desktop");
-            Object desktop = desktopClass.getMethod("getDesktop").invoke(null);
-
-            desktopClass.getMethod("browse", URI.class).invoke(desktop, new URI(uri));
-            return true;
-        } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | URISyntaxException e) {
-            TwitchChatIntegration.logger.error("Could not open your browser - please copy the link into your browser manually: {}", uri);
-            return false;
-        }
+        return getAuthenticationURL();
     }
 
     public static void requestUsername(final String token, final Runnable callback) {
@@ -156,7 +146,7 @@ public class TwitchAPI {
                 String jsonString = EntityUtils.toString(response.getEntity());
                 JsonObject root = gson.fromJson(jsonString, JsonObject.class);
                 String username = root.getAsJsonArray("data").get(0).getAsJsonObject().get("login").getAsString();
-                TwitchAuthManager.setAuthToken(username, token, TwitchIntegrationConfig.CLIENT.doNotStoreToken.get());
+                TwitchAuthManager.setAuthToken(username, token, !TwitchIntegrationConfig.CLIENT.doNotStoreToken.get());
                 Minecraft.getInstance().enqueue(callback);
             } catch (Exception e) {
                 String exceptionMessage = e.getMessage().replace(token, "<token>");

@@ -13,7 +13,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -23,9 +22,10 @@ public class TwitchCommand {
         dispatcher.register(Commands.literal("twitch")
                 .then(Commands.literal("authenticate").executes(TwitchCommand::authenticateTwitch))
                 .then(Commands.literal("send")
-                        .then(Commands.argument("channel", StringArgumentType.string()))
-                        .then(Commands.argument("message", StringArgumentType.greedyString()))
-                        .executes(TwitchCommand::sendMessage)));
+                        .then(Commands.argument("channel", StringArgumentType.string()).executes(it -> {
+                            System.out.println("oy");
+                            return 0;
+                        }).then(Commands.argument("message", StringArgumentType.greedyString()).executes(TwitchCommand::sendMessage)))));
     }
 
     private static int sendMessage(CommandContext<CommandSource> context) {
@@ -41,18 +41,18 @@ public class TwitchCommand {
                 return 0;
             }
 
-            if (channel.startsWith("#")) {
-                twitchClient.send(channel, message);
+            //if (channel.startsWith("#")) { TODO send whisper via /twitch whisper instead
+                twitchClient.send("#" + channel, message);
                 if (message.startsWith("/me ")) {
                     message = message.substring(4);
                     twitchChatHandler.onChatMessage(twitchClient, channel, twitchChatHandler.getThisUser(twitchClient, channel), new TwitchMessage(message, -1, true, 0));
                 } else {
                     twitchChatHandler.onChatMessage(twitchClient, channel, twitchChatHandler.getThisUser(twitchClient, channel), new TwitchMessage(message, -1, false, 0));
                 }
-            } else {
+            /*} else {
                 twitchClient.getTwitchCommands().whisper(channel, message);
                 twitchChatHandler.onWhisperMessage(twitchClient, twitchChatHandler.getThisUser(twitchClient, null), twitchChatHandler.getUser(channel), message);
-            }
+            }*/
         }
         return 1;
     }

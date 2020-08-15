@@ -20,6 +20,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
+import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -38,16 +39,23 @@ public class TwitchChatHandler extends TMIAdapter {
     private final ChatConsumer chatConsumer = new VanillaChatConsumer();
 
     private final Multimap<ChannelUser, TwitchMessage> messages = ArrayListMultimap.create();
-    private final Map<String, TwitchUser> users = Maps.newHashMap();
-    private Map<String, TwitchUser> thisUsers = Maps.newHashMap();
+    private final Map<String, TwitchUser> usersByUsername = Maps.newHashMap();
+    private Map<String, TwitchUser> usersByChannel = Maps.newHashMap();
 
     /*private final List<ChatImage> tmpBadges = new ArrayList<>();
     private final List<ChatImage> tmpEmotes = new ArrayList<>();
     private final List<String> tmpBadgeNames = Lists.newArrayList();*/
 
+    private void storeUserState(@Nullable String channel, TwitchUser user) {
+        usersByUsername.put(user.getNick(), user);
+        if (channel != null) {
+            usersByChannel.put(channel, user);
+        }
+    }
+
     @Override
     public void onUserState(TMIClient client, String channel, TwitchUser user) {
-        thisUsers.put(channel, user);
+        storeUserState(channel, user);
     }
 
     @Override
@@ -152,11 +160,10 @@ public class TwitchChatHandler extends TMIAdapter {
             }
              */
 
-            chatConsumer.onChatMessage(twitchChannel, twitchMessage);
+            chatConsumer.onChatMessage(twitchChannel, user, twitchMessage);
 
             messages.put(new ChannelUser(channel, user.getNick().toLowerCase(Locale.ENGLISH)), twitchMessage);
-            users.put(user.getNick().toLowerCase(Locale.ENGLISH), user);
-
+            storeUserState(channel, user);
         });
     }
 
@@ -229,7 +236,7 @@ public class TwitchChatHandler extends TMIAdapter {
                 }
                 String transformedMessage = sb.toString();*/
 
-                users.put(user.getNick().toLowerCase(Locale.ENGLISH), user);
+                storeUserState(null, user);
 
                 chatConsumer.onWhisperMessage(user, new TwitchMessage(message, -1, false, 0));
             }
@@ -267,17 +274,18 @@ public class TwitchChatHandler extends TMIAdapter {
 
     public TwitchUser getThisUser(TMIClient client, String channel) {
         if (channel == null) {
-            channel = !thisUsers.isEmpty() ? thisUsers.keySet().iterator().next() : "";
+            channel = !usersByChannel.isEmpty() ? usersByChannel.keySet().iterator().next() : "";
         }
 
-        if (!thisUsers.containsKey(channel)) {
-            thisUsers.put(channel, new TwitchUser(new IRCUser(client.getIRCConnection().getNick(), null, null)));
+        if (!usersByChannel.containsKey(channel)) {
+            storeUserState(channel, new TwitchUser(new IRCUser(client.getIRCConnection().getNick(), null, null)));
         }
-        return thisUsers.get(channel);
+
+        return usersByChannel.get(channel);
     }
 
     public TwitchUser getUser(String username) {
-        return users.computeIfAbsent(username.toLowerCase(Locale.ENGLISH), k -> new TwitchUser(new IRCUser(username, null, null)));
+        return usersByUsername.computeIfAbsent(username.toLowerCase(Locale.ENGLISH), k -> new TwitchUser(new IRCUser(username, null, null)));
     }
 
     /* TODO public int getAcceptableNameColor(int color) {

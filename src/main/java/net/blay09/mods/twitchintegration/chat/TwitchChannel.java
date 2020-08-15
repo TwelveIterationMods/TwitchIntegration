@@ -156,7 +156,7 @@ public class TwitchChannel {
         if (chatChannel != null) {
             ChatView twitchView = new ChatViewImpl(name);
             twitchView.addChannel(chatChannel.getName());
-            twitchView.setOutgoingPrefix("/twitch #" + name.toLowerCase(Locale.ENGLISH) + " ");
+            twitchView.setOutgoingPrefix("/twitch send " + name.toLowerCase(Locale.ENGLISH) + " ");
             ChatViewManager.registerView(twitchView);
         }
     }

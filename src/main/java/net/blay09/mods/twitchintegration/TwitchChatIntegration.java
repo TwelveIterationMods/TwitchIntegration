@@ -1,5 +1,6 @@
 package net.blay09.mods.twitchintegration;
 
+import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.command.TwitchCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
@@ -20,6 +21,8 @@ public class TwitchChatIntegration {
     public static Logger logger = LogManager.getLogger(MOD_ID);
 
     public TwitchChatIntegration() {
+        TwitchAuthManager.loadStoredToken();
+
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, TwitchIntegrationConfig.clientSpec);
 
         MinecraftForge.EVENT_BUS.register(this);

@@ -15,8 +15,10 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.CheckboxButton;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
@@ -41,15 +43,11 @@ public class TwitchAuthenticationScreen extends Screen {
             Minecraft.getInstance().displayGuiScreen(new TwitchOpenTokenScreen(success -> {
                 final Minecraft mc = Minecraft.getInstance();
                 if (success) {
-                    if (TwitchAPI.listenForToken(() -> mc.displayGuiScreen(new TwitchAuthenticationScreen(parentScreen)))) {
-                        mc.displayGuiScreen(new TwitchWaitingForTokenScreen());
-                    } else {
-                        if (mc.currentScreen instanceof TwitchOpenTokenScreen) {
-                            ((TwitchOpenTokenScreen) mc.currentScreen).showBrowseErrorHints();
-                        }
-                    }
+                    final String url = TwitchAPI.listenForToken(() -> mc.displayGuiScreen(new TwitchAuthenticationScreen(parentScreen)));
+                    Util.getOSType().openURI(url);
+                    mc.displayGuiScreen(new TwitchWaitingForTokenScreen());
                 } else {
-                    mc.displayGuiScreen(this);
+                    mc.displayGuiScreen(TwitchAuthenticationScreen.this);
                 }
             }, TwitchAPI.getAuthenticationURL()));
         });
@@ -60,11 +58,12 @@ public class TwitchAuthenticationScreen extends Screen {
         if (tokenPair != null) {
             tokenTextField.setText(tokenPair.getToken());
         }
+        tokenTextField.setTextFormatter((text, index) -> new StringTextComponent(StringUtils.repeat('*', text.length())).func_241878_f());
         tokenTextField.setEnabled(!TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get());
         this.addListener(tokenTextField);
         this.setFocusedDefault(tokenTextField);
 
-        CheckboxButton anonymousLoginCheckbox = new CheckboxButton(width / 2 - 100, height / 2 + 45, 160, 20, Messages.lang("gui.authentication.anonymousLogin"), TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get()) {
+        CheckboxButton anonymousLoginCheckbox = new CheckboxButton(width / 2 - 100, height / 2 + 45, 165, 20, Messages.lang("gui.authentication.anonymousLogin"), TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get()) {
             @Override
             public void onPress() {
                 super.onPress();
