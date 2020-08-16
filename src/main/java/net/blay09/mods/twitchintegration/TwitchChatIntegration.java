@@ -18,7 +18,6 @@ public class TwitchChatIntegration {
 
     // V1 Vanilla-only
     // - Save and load the channels that were joined
-    // - Able to control configs of channels (subs only, deleted message handling)
     // - Remaining TODOs
     // V2 Chat Tweaks
     // ...

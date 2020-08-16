@@ -9,6 +9,10 @@
     "twitchchatintegration.chat.subscribePrime": "%s just subscribed with Twitch Prime!",
     "twitchchatintegration.chat.resubscribe": "%s has subscribed for %d months in a row!",
 
+    "twitchchatintegration.commands.config.channelNotFound": "Channel %s not found",
+    "twitchchatintegration.commands.config.channelConfig": "[%s] subscribersOnly: %s, deletedMessagesMode: %s",
+    "twitchchatintegration.commands.config.channelConfigChanged": "[%s] %s set to %s",
+
     "twitchchatintegration.error.read_only_chat": "You can not send messages in anonymous mode.",
 
     "twitchchatintegration.gui.settings.loggedInAs": "Logged in as %s",

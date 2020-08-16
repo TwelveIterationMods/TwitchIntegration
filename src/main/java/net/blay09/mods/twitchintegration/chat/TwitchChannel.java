@@ -8,24 +8,9 @@ import java.util.Map;
 
 public class TwitchChannel {
 
-    public enum DeletedMessages {
-        Show,
-        Strikethrough,
-        Replace,
-        Hide;
-
-        public static DeletedMessages fromName(String name) {
-            try {
-                return valueOf(name);
-            } catch (IllegalArgumentException e) {
-                return Replace;
-            }
-        }
-    }
-
     private String name;
     private boolean subscribersOnly;
-    private DeletedMessages deletedMessages = DeletedMessages.Replace;
+    private DeletedMessagesMode deletedMessagesMode = DeletedMessagesMode.Replace;
     private boolean enabled = true;
     private int id = -1;
     private Map<String, TwitchBadge> badges;
@@ -58,12 +43,12 @@ public class TwitchChannel {
         this.subscribersOnly = subscribersOnly;
     }
 
-    public DeletedMessages getDeletedMessages() {
-        return deletedMessages;
+    public DeletedMessagesMode getDeletedMessages() {
+        return deletedMessagesMode;
     }
 
-    public void setDeletedMessages(DeletedMessages deletedMessages) {
-        this.deletedMessages = deletedMessages;
+    public void setDeletedMessagesMode(DeletedMessagesMode deletedMessagesMode) {
+        this.deletedMessagesMode = deletedMessagesMode;
     }
 
     public boolean isEnabled() {
@@ -79,7 +64,7 @@ public class TwitchChannel {
         obj.addProperty("name", name);
         obj.addProperty("subscribersOnly", subscribersOnly);
         obj.addProperty("channelId", id);
-        obj.addProperty("deletedMessages", deletedMessages.name());
+        obj.addProperty("deletedMessages", deletedMessagesMode.name());
         obj.addProperty("active", enabled);
         return obj;
     }
@@ -88,7 +73,7 @@ public class TwitchChannel {
         TwitchChannel channel = new TwitchChannel(obj.get("name").getAsString());
         channel.subscribersOnly = obj.has("subscribersOnly") && obj.get("subscribersOnly").getAsBoolean();
         channel.id = obj.has("channelId") ? obj.get("channelId").getAsInt() : -1;
-        channel.deletedMessages = DeletedMessages.fromName(obj.get("deletedMessages").getAsString());
+        channel.deletedMessagesMode = DeletedMessagesMode.fromName(obj.get("deletedMessages").getAsString());
         channel.enabled = obj.has("active") && obj.get("active").getAsBoolean();
         return channel;
     }
