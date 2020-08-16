@@ -9,7 +9,7 @@ import net.blay09.javatmi.TwitchMessage;
 import net.blay09.javatmi.TwitchUser;
 import net.blay09.mods.twitchintegration.TwitchChannelManager;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.twitchintegration.TwitchManager;
+import net.blay09.mods.twitchintegration.TwitchSessionManager;
 import net.blay09.mods.twitchintegration.gui.screen.TwitchAuthenticationScreen;
 import net.blay09.mods.twitchintegration.handler.TwitchChatHandler;
 import net.blay09.mods.twitchintegration.util.Messages;
@@ -23,7 +23,7 @@ import net.minecraftforge.common.util.FakePlayer;
 public class TwitchCommand {
 
     private static final SuggestionProvider<CommandSource> whisperSuggestionProvider = (context, builder) -> {
-        for (TwitchUser user : TwitchManager.getTwitchChatHandler().getWhisperUsers()) {
+        for (TwitchUser user : TwitchSessionManager.getTwitchChatHandler().getWhisperUsers()) {
             builder.suggest(user.getNick());
         }
         return builder.buildFuture();
@@ -36,6 +36,8 @@ public class TwitchCommand {
                         .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::joinChannel)))
                 .then(Commands.literal("leave")
                         .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::leaveChannel)))
+                .then(Commands.literal("remove")
+                        .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::removeChannel)))
                 .then(Commands.literal("whisper")
                         .then(Commands.argument("user", StringArgumentType.string()).suggests(whisperSuggestionProvider)
                                 .then(Commands.argument("message", StringArgumentType.greedyString()).executes(TwitchCommand::sendWhisper))))
@@ -47,7 +49,7 @@ public class TwitchCommand {
     private static int sendWhisper(CommandContext<CommandSource> context) {
         String user = StringArgumentType.getString(context, "user");
         String message = StringArgumentType.getString(context, "message");
-        TMIClient twitchClient = TwitchManager.getClient();
+        TMIClient twitchClient = TwitchSessionManager.getClient();
         if (twitchClient != null) {
             if (isReadOnlyChat(twitchClient)) {
                 context.getSource().sendFeedback(Messages.styledLang("error.read_only_chat", TextFormatting.RED), false);
@@ -56,7 +58,7 @@ public class TwitchCommand {
 
             twitchClient.getTwitchCommands().whisper(user, message);
 
-            final TwitchChatHandler twitchChatHandler = TwitchManager.getTwitchChatHandler();
+            final TwitchChatHandler twitchChatHandler = TwitchSessionManager.getTwitchChatHandler();
             twitchChatHandler.onWhisperMessage(twitchClient, twitchChatHandler.getOrCreateClientUser(twitchClient, null), twitchChatHandler.getWhisperUser(user), message);
         }
         return 1;
@@ -65,7 +67,7 @@ public class TwitchCommand {
     private static int sendMessage(CommandContext<CommandSource> context) {
         String channel = StringArgumentType.getString(context, "channel");
         String message = StringArgumentType.getString(context, "message");
-        TMIClient twitchClient = TwitchManager.getClient();
+        TMIClient twitchClient = TwitchSessionManager.getClient();
         if (twitchClient != null) {
             if (isReadOnlyChat(twitchClient)) {
                 context.getSource().sendFeedback(Messages.styledLang("error.read_only_chat", TextFormatting.RED), false);
@@ -74,7 +76,7 @@ public class TwitchCommand {
 
             twitchClient.send("#" + channel, message);
 
-            final TwitchChatHandler twitchChatHandler = TwitchManager.getTwitchChatHandler();
+            final TwitchChatHandler twitchChatHandler = TwitchSessionManager.getTwitchChatHandler();
             if (message.startsWith("/me ")) {
                 message = message.substring(4);
                 twitchChatHandler.onChatMessage(twitchClient, channel, twitchChatHandler.getOrCreateClientUser(twitchClient, channel), new TwitchMessage(message, -1, true, 0));
@@ -95,11 +97,15 @@ public class TwitchCommand {
     private static int leaveChannel(CommandContext<CommandSource> context) {
         String channel = StringArgumentType.getString(context, "channel");
 
-        if (TwitchChannelManager.leaveChannel(channel)) {
-            return 1;
-        } else {
-            return 0;
-        }
+        TwitchChannelManager.leaveChannel(channel);
+        return 1;
+    }
+
+    private static int removeChannel(CommandContext<CommandSource> context) {
+        String channel = StringArgumentType.getString(context, "channel");
+
+        TwitchChannelManager.removeChannelByName(channel);
+        return 1;
     }
 
     private static int authenticateTwitch(CommandContext<CommandSource> context) {

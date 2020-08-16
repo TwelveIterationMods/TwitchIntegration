@@ -2,6 +2,8 @@ package net.blay09.mods.twitchintegration;
 
 import com.google.common.collect.Maps;
 import net.blay09.mods.twitchintegration.api.event.TwitchChannelAddedEvent;
+import net.blay09.mods.twitchintegration.api.event.TwitchChannelDisabledEvent;
+import net.blay09.mods.twitchintegration.api.event.TwitchChannelEnabledEvent;
 import net.blay09.mods.twitchintegration.api.event.TwitchChannelRemovedEvent;
 import net.blay09.mods.twitchintegration.chat.TwitchChannel;
 import net.minecraftforge.common.MinecraftForge;
@@ -19,39 +21,33 @@ public class TwitchChannelManager {
         return channels.values();
     }
 
-    public static boolean joinChannel(String channelName) {
-        if (getChannel(channelName) != null) {
-            return false;
+    public static void joinChannel(String channelName) {
+        TwitchChannel channel = getChannel(channelName);
+        if (channel == null) {
+            channel = new TwitchChannel(channelName);
+            addChannel(channel);
         }
 
-        TwitchChannel channel = new TwitchChannel(channelName);
-        addChannel(channel);
-        return true;
+        channel.setEnabled(true);
+        MinecraftForge.EVENT_BUS.post(new TwitchChannelEnabledEvent(channel));
     }
 
-    public static boolean leaveChannel(String channelName) {
+    public static void leaveChannel(String channelName) {
         final TwitchChannel channel = getChannel(channelName);
         if (channel != null) {
-            removeChannel(channel);
-            return true;
+            channel.setEnabled(false);
+            MinecraftForge.EVENT_BUS.post(new TwitchChannelDisabledEvent(channel));
         }
-
-        return false;
     }
 
     public static void addChannel(TwitchChannel channel) {
         channels.put(channel.getName().toLowerCase(Locale.ENGLISH), channel);
-
-        // TODO channel.loadChannelBadges();
-        // TODO TwitchChatIntegration.loadChannelEmotes(channel);
-
         MinecraftForge.EVENT_BUS.post(new TwitchChannelAddedEvent(channel));
     }
 
-    public static void removeChannel(TwitchChannel channel) {
-        channels.remove(channel.getName().toLowerCase(Locale.ENGLISH));
-
-        MinecraftForge.EVENT_BUS.post(new TwitchChannelRemovedEvent(channel));
+    public static void removeChannelByName(String channelName) {
+        final TwitchChannel removedChannel = channels.remove(channelName.toLowerCase(Locale.ENGLISH));
+        MinecraftForge.EVENT_BUS.post(new TwitchChannelRemovedEvent(removedChannel));
     }
 
     public static void createDefaultChannelIfNotExists(String username) {
@@ -69,15 +65,5 @@ public class TwitchChannelManager {
         }
 
         return channels.get(channel.toLowerCase(Locale.ENGLISH));
-    }
-
-    public static void removeAllChannels() {
-        channels.clear();
-    }
-
-    public static void renameTwitchChannel(TwitchChannel twitchChannel, String newName) {
-        removeChannel(twitchChannel);
-        twitchChannel.setName(newName);
-        addChannel(twitchChannel);
     }
 }

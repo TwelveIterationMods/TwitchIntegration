@@ -1,6 +1,8 @@
 {
     "twitchchatintegration.chat.message": "%s: %s",
     "twitchchatintegration.chat.action": "%s %s",
+    "twitchchatintegration.chat.multiChannel.message": "[%s] %s: %s",
+    "twitchchatintegration.chat.multiChannel.action": "[%s] %s %s",
     "twitchchatintegration.chat.whisper.message": "(whisper) %s: %s",
     "twitchchatintegration.chat.whisper.action": "(whisper) %s %s",
     "twitchchatintegration.chat.subscribe": "%s just subscribed!",

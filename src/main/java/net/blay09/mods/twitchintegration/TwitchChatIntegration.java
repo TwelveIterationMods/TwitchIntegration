@@ -18,9 +18,7 @@ public class TwitchChatIntegration {
 
     // V1 Vanilla-only
     // - Save and load the channels that were joined
-    // - Able to toggle enabled status of channels
     // - Able to control configs of channels (subs only, deleted message handling)
-    // - Show channel name in front for VanillaCC if multiple are joined
     // - Remaining TODOs
     // V2 Chat Tweaks
     // ...
@@ -45,8 +43,8 @@ public class TwitchChatIntegration {
     @SubscribeEvent
     public void onWorldJoined(EntityJoinWorldEvent event) {
         if (event.getEntity() == Minecraft.getInstance().player) {
-            if (!TwitchManager.isConnected()) {
-                TwitchManager.connect();
+            if (!TwitchSessionManager.isConnected()) {
+                TwitchSessionManager.connect();
             }
         }
         // TODO disconnect on world leave

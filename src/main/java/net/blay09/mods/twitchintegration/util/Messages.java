@@ -31,11 +31,15 @@ public class Messages {
         return I18n.format(TwitchChatIntegration.MOD_ID + "." + key, args);
     }
 
-    public static StringTextComponent styledString(String key, @Nullable Style style) {
-        final StringTextComponent text = new StringTextComponent(key);
+    public static StringTextComponent styledString(String text, @Nullable TextFormatting formatting) {
+        return styledString(text, formatting != null ? Style.EMPTY.applyFormatting(formatting) : null);
+    }
+
+    public static StringTextComponent styledString(String text, @Nullable Style style) {
+        final StringTextComponent textComponent = new StringTextComponent(text);
         if (style != null) {
-            text.setStyle(style);
+            textComponent.setStyle(style);
         }
-        return text;
+        return textComponent;
     }
 }

@@ -9,7 +9,7 @@ import net.blay09.javatmi.TwitchUser;
 import net.blay09.mods.twitchintegration.TwitchChannelManager;
 import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.twitchintegration.TwitchManager;
+import net.blay09.mods.twitchintegration.TwitchSessionManager;
 import net.blay09.mods.twitchintegration.api.ChatConsumer;
 import net.blay09.mods.twitchintegration.chat.TwitchChannel;
 import net.blay09.mods.twitchintegration.compat.vanilla.VanillaChatConsumer;
@@ -270,7 +270,7 @@ public class TwitchChatHandler extends TMIAdapter {
                 Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Twitch Integration encountered an unhandled exception. The connection has been terminated. Please review your log files and let the mod developer know."), false);
             }
         });
-        TwitchManager.disconnect();
+        TwitchSessionManager.disconnect();
     }
 
     public TwitchUser getOrCreateClientUser(TMIClient client, String channel) {

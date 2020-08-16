@@ -4,7 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
-import net.blay09.mods.twitchintegration.TwitchManager;
+import net.blay09.mods.twitchintegration.TwitchSessionManager;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthToken;
 import net.blay09.mods.twitchintegration.gui.widget.PasswordFieldWidget;
@@ -77,18 +77,18 @@ public class TwitchAuthenticationScreen extends Screen {
             TwitchAuthToken authToken = TwitchAuthManager.getAuthToken();
             if (!TwitchIntegrationConfig.CLIENT.useAnonymousLogin.get() && (authToken == null || !authToken.getToken().equals(tokenTextField.getText()) || authToken.getUsername() == null)) {
                 Minecraft.getInstance().displayGuiScreen(new TwitchWaitingForUsernameScreen());
-                TwitchAPI.requestUsername(tokenTextField.getText(), TwitchManager::connect);
+                TwitchAPI.requestUsername(tokenTextField.getText(), TwitchSessionManager::connect);
             } else {
-                if (TwitchManager.isConnected()) {
-                    TwitchManager.disconnect();
+                if (TwitchSessionManager.isConnected()) {
+                    TwitchSessionManager.disconnect();
                 } else {
-                    TwitchManager.connect();
+                    TwitchSessionManager.connect();
                 }
                 Minecraft.getInstance().displayGuiScreen(parentScreen);
             }
         });
 
-        if (TwitchManager.isConnected()) {
+        if (TwitchSessionManager.isConnected()) {
             connectButton.setMessage(Messages.lang("gui.authentication.disconnect"));
         }
 

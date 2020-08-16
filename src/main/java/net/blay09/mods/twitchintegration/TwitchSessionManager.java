@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import net.blay09.javairc.IRCConfiguration;
 import net.blay09.javatmi.TMIClient;
 import net.blay09.mods.twitchintegration.api.event.TwitchChannelAddedEvent;
+import net.blay09.mods.twitchintegration.api.event.TwitchChannelDisabledEvent;
+import net.blay09.mods.twitchintegration.api.event.TwitchChannelEnabledEvent;
 import net.blay09.mods.twitchintegration.api.event.TwitchChannelRemovedEvent;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthToken;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Mod.EventBusSubscriber(modid = TwitchChatIntegration.MOD_ID, value = Dist.CLIENT)
-public class TwitchManager {
+public class TwitchSessionManager {
 
     private static final TwitchChatHandler twitchChatHandler = new TwitchChatHandler();
     private static final List<TwitchChannel> joinedChannels = Lists.newArrayList();
@@ -78,8 +80,12 @@ public class TwitchManager {
         return twitchChatHandler;
     }
 
+    public static List<TwitchChannel> getJoinedChannels() {
+        return joinedChannels;
+    }
+
     @SubscribeEvent
-    public static void onTwitchChannelAdded(TwitchChannelAddedEvent event) {
+    public static void onTwitchChannelEnabled(TwitchChannelEnabledEvent event) {
         final TwitchChannel channel = event.getTwitchChannel();
         if (!joinedChannels.contains(channel)) {
             if (twitchClient != null) {
@@ -90,7 +96,7 @@ public class TwitchManager {
     }
 
     @SubscribeEvent
-    public static void onTwitchChannelRemoved(TwitchChannelRemovedEvent event) {
+    public static void onTwitchChannelDisabled(TwitchChannelDisabledEvent event) {
         final TwitchChannel channel = event.getTwitchChannel();
         if (joinedChannels.remove(channel)) {
             if (twitchClient != null) {
