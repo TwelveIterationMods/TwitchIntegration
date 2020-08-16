@@ -23,7 +23,7 @@ import net.minecraftforge.common.util.FakePlayer;
 public class TwitchCommand {
 
     private static final SuggestionProvider<CommandSource> whisperSuggestionProvider = (context, builder) -> {
-        for (TwitchUser user : TwitchManager.getTwitchChatHandler().getKnownWhisperUsers()) {
+        for (TwitchUser user : TwitchManager.getTwitchChatHandler().getWhisperUsers()) {
             builder.suggest(user.getNick());
         }
         return builder.buildFuture();
@@ -57,7 +57,7 @@ public class TwitchCommand {
             twitchClient.getTwitchCommands().whisper(user, message);
 
             final TwitchChatHandler twitchChatHandler = TwitchManager.getTwitchChatHandler();
-            twitchChatHandler.onWhisperMessage(twitchClient, twitchChatHandler.getOrCreateClientUser(twitchClient, null), twitchChatHandler.getUser(user), message);
+            twitchChatHandler.onWhisperMessage(twitchClient, twitchChatHandler.getOrCreateClientUser(twitchClient, null), twitchChatHandler.getWhisperUser(user), message);
         }
         return 1;
     }

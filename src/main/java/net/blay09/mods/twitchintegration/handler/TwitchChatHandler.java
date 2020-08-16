@@ -1,8 +1,6 @@
 package net.blay09.mods.twitchintegration.handler;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import net.blay09.javairc.IRCUser;
 import net.blay09.javatmi.TMIAdapter;
 import net.blay09.javatmi.TMIClient;
@@ -23,7 +21,6 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -41,20 +38,19 @@ public class TwitchChatHandler extends TMIAdapter {
 
     private final ChatConsumer chatConsumer = new VanillaChatConsumer();
 
-    private final Map<String, TwitchUser> knownWhisperUsers = new HashMap<>();
-
     private final Multimap<ChannelUser, TwitchMessage> messages = ArrayListMultimap.create();
-    private final Map<String, TwitchUser> usersByUsername = Maps.newHashMap();
-    private Map<String, TwitchUser> usersByChannel = Maps.newHashMap();
+    private final Map<String, TwitchUser> whisperUsers = Maps.newHashMap();
+    private final Table<String, String, TwitchUser> usersByChannel = HashBasedTable.create();
 
     /*private final List<ChatImage> tmpBadges = new ArrayList<>();
     private final List<ChatImage> tmpEmotes = new ArrayList<>();
     private final List<String> tmpBadgeNames = Lists.newArrayList();*/
 
     private void storeUserState(@Nullable String channel, TwitchUser user) {
-        usersByUsername.put(user.getNick(), user);
         if (channel != null) {
-            usersByChannel.put(channel, user);
+            usersByChannel.put(channel, user.getNick(), user);
+        } else {
+            whisperUsers.put(user.getNick(), user);
         }
     }
 
@@ -199,8 +195,6 @@ public class TwitchChatHandler extends TMIAdapter {
 
     @Override
     public void onWhisperMessage(TMIClient client, TwitchUser user, String message) {
-        knownWhisperUsers.put(user.getNick(), user);
-
         onWhisperMessage(client, user, getOrCreateClientUser(client, null), message);
     }
 
@@ -280,22 +274,21 @@ public class TwitchChatHandler extends TMIAdapter {
     }
 
     public TwitchUser getOrCreateClientUser(TMIClient client, String channel) {
-        if (channel == null) {
-            channel = !usersByChannel.isEmpty() ? usersByChannel.keySet().iterator().next() : "";
+        final String username = client.getIRCConnection().getNick();
+        TwitchUser user = usersByChannel.get(username, channel);
+        if (user == null) {
+            user = new TwitchUser(new IRCUser(username, null, null));
+            storeUserState(channel, user);
         }
 
-        if (!usersByChannel.containsKey(channel)) {
-            storeUserState(channel, new TwitchUser(new IRCUser(client.getIRCConnection().getNick(), null, null)));
-        }
-
-        return usersByChannel.get(channel);
+        return user;
     }
 
-    public TwitchUser getUser(String username) {
-        return usersByUsername.computeIfAbsent(username.toLowerCase(Locale.ENGLISH), k -> new TwitchUser(new IRCUser(username, null, null)));
+    public TwitchUser getWhisperUser(String username) {
+        return whisperUsers.computeIfAbsent(username.toLowerCase(Locale.ENGLISH), k -> new TwitchUser(new IRCUser(username, null, null)));
     }
 
-    public Collection<TwitchUser> getKnownWhisperUsers() {
-        return knownWhisperUsers.values();
+    public Collection<TwitchUser> getWhisperUsers() {
+        return whisperUsers.values();
     }
 }
