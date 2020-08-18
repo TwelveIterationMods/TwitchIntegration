@@ -8,6 +8,10 @@
     "twitchchatintegration.chat.subscribe": "%s just subscribed!",
     "twitchchatintegration.chat.subscribePrime": "%s just subscribed with Twitch Prime!",
     "twitchchatintegration.chat.resubscribe": "%s has subscribed for %d months in a row!",
+    "twitchchatintegration.chat.giftSubscribe": "%s has gifted a subscription to %s!",
+    "twitchchatintegration.chat.giftSubscribeAnonymous": "An anonymous gifter has gifted a subscription to %s!",
+    "twitchchatintegration.chat.giftPaidUpgrade": "%s has upgraded their previously gifted subscription by %s!",
+    "twitchchatintegration.chat.giftPaidUpgradeAnonymous": "%s has upgraded their previously gifted subscription!",
 
     "twitchchatintegration.commands.config.channelNotFound": "Channel %s not found",
     "twitchchatintegration.commands.config.channelConfig": "[%s] %s",

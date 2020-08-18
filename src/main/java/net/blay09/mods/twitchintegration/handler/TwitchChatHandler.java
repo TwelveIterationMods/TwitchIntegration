@@ -2,10 +2,7 @@ package net.blay09.mods.twitchintegration.handler;
 
 import com.google.common.collect.*;
 import net.blay09.javairc.IRCUser;
-import net.blay09.javatmi.TMIAdapter;
-import net.blay09.javatmi.TMIClient;
-import net.blay09.javatmi.TwitchMessage;
-import net.blay09.javatmi.TwitchUser;
+import net.blay09.javatmi.*;
 import net.blay09.mods.twitchintegration.TwitchChatIntegration;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.twitchintegration.TwitchSessionManager;
@@ -158,24 +155,53 @@ public class TwitchChatHandler extends TMIAdapter {
     }
 
     @Override
-    public void onSubscribe(TMIClient client, final String channel, final String username, final boolean prime) {
+    public void onSubscribe(TMIClient client, String channel, TwitchUser user, SubscriptionInfo subscriptionInfo) {
         Minecraft.getInstance().enqueue(() -> {
             TwitchChannel twitchChannel = TwitchSessionManager.getChannelManager().getChannel(channel);
-            final TranslationTextComponent subscribeText = Messages.styledLang((prime ? "chat.subscribePrime" : "chat.subscribe"), TextFormatting.YELLOW, username);
+            final TranslationTextComponent subscribeText = Messages.styledLang((subscriptionInfo.isPrime() ? "chat.subscribePrime" : "chat.subscribe"), TextFormatting.YELLOW, user.getDisplayName());
             chatConsumer.onSystemMessage(twitchChannel, subscribeText);
         });
     }
 
     @Override
-    public void onResubscribe(TMIClient client, final String channel, final TwitchUser user, final int months, String message) {
+    public void onResubscribe(TMIClient client, String channel, TwitchUser user, SubscriptionInfo subscriptionInfo) {
+        super.onResubscribe(client, channel, user, subscriptionInfo);
         Minecraft.getInstance().enqueue(() -> {
             TwitchChannel twitchChannel = TwitchSessionManager.getChannelManager().getChannel(channel);
-            final TranslationTextComponent resubscribeText = Messages.styledLang("chat.resubscribe", TextFormatting.YELLOW, user.getDisplayName(), months);
+            final TranslationTextComponent resubscribeText = Messages.styledLang("chat.resubscribe", TextFormatting.YELLOW, user.getDisplayName(), subscriptionInfo.getCumulativeMonths());
             chatConsumer.onSystemMessage(twitchChannel, resubscribeText);
         });
-        if (message != null) {
-            onTwitchChat(client, channel, user, new TwitchMessage(message, -1, false, 0));
+        if (subscriptionInfo.getMessage() != null) {
+            onTwitchChat(client, channel, user, new TwitchMessage(subscriptionInfo.getMessage(), -1, false, 0));
         }
+    }
+
+    @Override
+    public void onGiftSubscription(TMIClient client, String channel, TwitchUser user, GiftSubscriptionInfo giftSubscriptionInfo) {
+        Minecraft.getInstance().enqueue(() -> {
+            TwitchChannel twitchChannel = TwitchSessionManager.getChannelManager().getChannel(channel);
+            if (giftSubscriptionInfo.isSenderAnonymous()) {
+                final TranslationTextComponent giftSubscribeText = Messages.styledLang("chat.giftSubscribeAnonymous", TextFormatting.YELLOW, giftSubscriptionInfo.getRecipientDisplayName());
+                chatConsumer.onSystemMessage(twitchChannel, giftSubscribeText);
+            } else {
+                final TranslationTextComponent giftSubscribeText = Messages.styledLang("chat.giftSubscribe", TextFormatting.YELLOW, user.getDisplayName(), giftSubscriptionInfo.getRecipientDisplayName());
+                chatConsumer.onSystemMessage(twitchChannel, giftSubscribeText);
+            }
+        });
+    }
+
+    @Override
+    public void onGiftPaidUpgrade(TMIClient client, String channel, TwitchUser user, GiftPaidUpgradeInfo giftPaidUpgradeInfo) {
+        Minecraft.getInstance().enqueue(() -> {
+            TwitchChannel twitchChannel = TwitchSessionManager.getChannelManager().getChannel(channel);
+            if (giftPaidUpgradeInfo.isSenderAnonymous()) {
+                final TranslationTextComponent giftSubscribeText = Messages.styledLang("chat.giftPaidUpgradeAnonymous", TextFormatting.YELLOW, user.getDisplayName());
+                chatConsumer.onSystemMessage(twitchChannel, giftSubscribeText);
+            } else {
+                final TranslationTextComponent giftSubscribeText = Messages.styledLang("chat.giftPaidUpgrade", TextFormatting.YELLOW, user.getDisplayName(), giftPaidUpgradeInfo.getSenderName());
+                chatConsumer.onSystemMessage(twitchChannel, giftSubscribeText);
+            }
+        });
     }
 
     @Override

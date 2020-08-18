@@ -52,8 +52,9 @@ dependencies {
     implementation "net.blay09:javairc:0.1.0-SNAPSHOT"
     shade "net.blay09:javairc:0.1.0-SNAPSHOT"
 
-    implementation "net.blay09:javatmi:0.1.0-SNAPSHOT"
-    shade "net.blay09:javatmi:0.1.0-SNAPSHOT"
+    def javaTMI = "net.blay09:javatmi:0.2.2-SNAPSHOT"
+    implementation javaTMI
+    shade javaTMI
 }
 
 minecraft {

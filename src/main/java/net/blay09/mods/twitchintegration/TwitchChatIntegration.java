@@ -6,7 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -18,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 public class TwitchChatIntegration {
 
     // V1 Vanilla-only
-    // - Remaining TODOs
+    // - Check if hosts / raids show
     // V2 Chat Tweaks
     // ...
 
