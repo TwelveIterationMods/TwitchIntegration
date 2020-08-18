@@ -80,7 +80,7 @@ public class TwitchSessionManager {
     }
 
     public static boolean isConnected() {
-        return twitchClient != null && twitchClient.getIRCConnection().isConnected();
+        return twitchClient != null;
     }
 
     public static TwitchChatHandler getChatHandler() {

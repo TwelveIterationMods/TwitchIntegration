@@ -3,9 +3,9 @@ package net.blay09.mods.twitchintegration;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.command.TwitchCommand;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.SharedConstants;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 public class TwitchChatIntegration {
 
     // V1 Vanilla-only
-    // - Save and load the channels that were joined
     // - Remaining TODOs
     // V2 Chat Tweaks
     // ...
@@ -42,13 +41,16 @@ public class TwitchChatIntegration {
     }
 
     @SubscribeEvent
-    public void onWorldJoined(EntityJoinWorldEvent event) {
-        if (event.getEntity() == Minecraft.getInstance().player) {
-            if (!TwitchSessionManager.isConnected()) {
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            boolean twitchConnected = TwitchSessionManager.isConnected();
+            boolean isInGame = Minecraft.getInstance().player != null;
+            if(twitchConnected && !isInGame) {
+                TwitchSessionManager.disconnect();
+            } else if(!twitchConnected && isInGame) {
                 TwitchSessionManager.connect();
             }
         }
-        // TODO disconnect on world leave
     }
 
 }
