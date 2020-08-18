@@ -8,7 +8,6 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.blay09.javatmi.TMIClient;
 import net.blay09.javatmi.TwitchMessage;
 import net.blay09.javatmi.TwitchUser;
-import net.blay09.mods.twitchintegration.TwitchChannelManager;
 import net.blay09.mods.twitchintegration.TwitchIntegrationConfig;
 import net.blay09.mods.twitchintegration.TwitchSessionManager;
 import net.blay09.mods.twitchintegration.chat.DeletedMessagesMode;
@@ -26,11 +25,20 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.server.command.EnumArgument;
 
+import java.util.Collection;
+
 public class TwitchCommand {
 
     private static final SuggestionProvider<CommandSource> whisperSuggestionProvider = (context, builder) -> {
-        for (TwitchUser user : TwitchSessionManager.getTwitchChatHandler().getWhisperUsers()) {
+        for (TwitchUser user : TwitchSessionManager.getChatHandler().getWhisperUsers()) {
             builder.suggest(user.getNick());
+        }
+        return builder.buildFuture();
+    };
+
+    private static final SuggestionProvider<CommandSource> channelSuggestionProvider = (context, builder) -> {
+        for (TwitchChannel channel : TwitchSessionManager.getChannelManager().getChannels()) {
+            builder.suggest(channel.getName());
         }
         return builder.buildFuture();
     };
@@ -38,25 +46,26 @@ public class TwitchCommand {
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(Commands.literal("twitch").requires(it -> it.getEntity() instanceof PlayerEntity && !(it.getEntity() instanceof FakePlayer))
                 .then(Commands.literal("authenticate").executes(TwitchCommand::authenticateTwitch))
+                .then(Commands.literal("channels").executes(TwitchCommand::listChannels))
                 .then(Commands.literal("join")
-                        .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::joinChannel)))
+                        .then(Commands.argument("channel", StringArgumentType.string()).suggests(channelSuggestionProvider).executes(TwitchCommand::joinChannel)))
                 .then(Commands.literal("leave")
-                        .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::leaveChannel)))
+                        .then(Commands.argument("channel", StringArgumentType.string()).suggests(channelSuggestionProvider).executes(TwitchCommand::leaveChannel)))
                 .then(Commands.literal("remove")
-                        .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::removeChannel)))
+                        .then(Commands.argument("channel", StringArgumentType.string()).suggests(channelSuggestionProvider).executes(TwitchCommand::removeChannel)))
                 .then(Commands.literal("config")
-                        .then(Commands.argument("channel", StringArgumentType.string()).executes(TwitchCommand::printChannelConfig)
-                                .then(Commands.literal("subscribersOnly")
+                        .then(Commands.argument("channel", StringArgumentType.string()).suggests(channelSuggestionProvider)
+                                .then(Commands.literal("subscribersOnly").executes(context -> printChannelConfig(context, "subscribersOnly"))
                                         .then(Commands.argument("subscribersOnly", BoolArgumentType.bool())
-                                                .executes(TwitchCommand::changeSubscribersOnly)))
-                                .then(Commands.literal("deletedMessagesMode")
+                                                .executes(context -> changeChannelConfig(context, "subscribersOnly"))))
+                                .then(Commands.literal("deletedMessagesMode").executes(context -> printChannelConfig(context, "deletedMessagesMode"))
                                         .then(Commands.argument("mode", EnumArgument.enumArgument(DeletedMessagesMode.class))
-                                                .executes(TwitchCommand::changeDeletedMessagesMode)))))
+                                                .executes(context -> changeChannelConfig(context, "deletedMessagesMode"))))))
                 .then(Commands.literal("whisper")
                         .then(Commands.argument("user", StringArgumentType.string()).suggests(whisperSuggestionProvider)
                                 .then(Commands.argument("message", StringArgumentType.greedyString()).executes(TwitchCommand::sendWhisper))))
                 .then(Commands.literal("send")
-                        .then(Commands.argument("channel", StringArgumentType.string())
+                        .then(Commands.argument("channel", StringArgumentType.string()).suggests(channelSuggestionProvider)
                                 .then(Commands.argument("message", StringArgumentType.greedyString()).executes(TwitchCommand::sendMessage)))));
     }
 
@@ -72,7 +81,7 @@ public class TwitchCommand {
 
             twitchClient.getTwitchCommands().whisper(user, message);
 
-            final TwitchChatHandler twitchChatHandler = TwitchSessionManager.getTwitchChatHandler();
+            final TwitchChatHandler twitchChatHandler = TwitchSessionManager.getChatHandler();
             twitchChatHandler.onWhisperMessage(twitchClient, twitchChatHandler.getOrCreateClientUser(twitchClient, null), twitchChatHandler.getWhisperUser(user), message);
         }
         return 1;
@@ -90,7 +99,7 @@ public class TwitchCommand {
 
             twitchClient.send("#" + channel, message);
 
-            final TwitchChatHandler twitchChatHandler = TwitchSessionManager.getTwitchChatHandler();
+            final TwitchChatHandler twitchChatHandler = TwitchSessionManager.getChatHandler();
             if (message.startsWith("/me ")) {
                 message = message.substring(4);
                 twitchChatHandler.onChatMessage(twitchClient, channel, twitchChatHandler.getOrCreateClientUser(twitchClient, channel), new TwitchMessage(message, -1, true, 0));
@@ -102,63 +111,100 @@ public class TwitchCommand {
     }
 
     private static int joinChannel(CommandContext<CommandSource> context) {
-        String channel = StringArgumentType.getString(context, "channel");
+        String channelName = StringArgumentType.getString(context, "channel");
 
-        TwitchChannelManager.joinChannel(channel);
+        TwitchSessionManager.getChannelManager().joinChannel(channelName);
+
+        final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
+        context.getSource().sendFeedback(Messages.lang("commands.join", channelNameText), true);
         return 1;
     }
 
     private static int leaveChannel(CommandContext<CommandSource> context) {
-        String channel = StringArgumentType.getString(context, "channel");
+        String channelName = StringArgumentType.getString(context, "channel");
 
-        TwitchChannelManager.leaveChannel(channel);
+        TwitchSessionManager.getChannelManager().leaveChannel(channelName);
+
+        final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
+        context.getSource().sendFeedback(Messages.lang("commands.leave", channelNameText), true);
         return 1;
     }
 
     private static int removeChannel(CommandContext<CommandSource> context) {
-        String channel = StringArgumentType.getString(context, "channel");
+        String channelName = StringArgumentType.getString(context, "channel");
 
-        TwitchChannelManager.removeChannelByName(channel);
+        TwitchSessionManager.getChannelManager().removeChannelByName(channelName);
+
+        final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
+        context.getSource().sendFeedback(Messages.lang("commands.remove", channelNameText), true);
         return 1;
     }
 
-    private static int printChannelConfig(CommandContext<CommandSource> context) {
+    private static int listChannels(CommandContext<CommandSource> context) {
+        final Collection<TwitchChannel> channels = TwitchSessionManager.getChannelManager().getChannels();
+        if (channels.isEmpty()) {
+            throw new CommandException(Messages.lang("commands.channels.noChannels"));
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (TwitchChannel channel : channels) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(Messages.format("commands.channels.channelListItem", channel.getName(), channel.isEnabled()));
+        }
+        final ITextComponent channelListItemsText = Messages.styledString(builder.toString(), TextFormatting.WHITE);
+        final ITextComponent channelListText = Messages.styledLang("commands.channels.channelList", TextFormatting.YELLOW, channelListItemsText);
+        context.getSource().sendFeedback(channelListText, true);
+        return 1;
+    }
+
+    private static int printChannelConfig(CommandContext<CommandSource> context, String option) {
         final String channelName = StringArgumentType.getString(context, "channel");
-        final TwitchChannel channel = TwitchChannelManager.getChannel(channelName);
+        final TwitchChannel channel = TwitchSessionManager.getChannelManager().getChannel(channelName);
         if (channel == null) {
             throw new CommandException(Messages.lang("commands.config.channelNotFound", channelName));
         }
 
-        final ITextComponent configText = Messages.lang("commands.config.channelConfig", channelName, channel.isSubscribersOnly(), channel.getDeletedMessages());
+        Object value = null;
+        if (option.equals("subscribersOnly")) {
+            value = channel.isSubscribersOnly();
+        } else if (option.equals("deletedMessagesMode")) {
+            value = channel.getDeletedMessagesMode();
+        }
+        final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
+        final ITextComponent optionText = Messages.styledString(option, TextFormatting.GRAY);
+        final ITextComponent valueText = Messages.styledString(String.valueOf(value), TextFormatting.GREEN);
+        final ITextComponent configText = Messages.lang("commands.config.channelConfigValue", channelNameText, optionText, valueText);
         context.getSource().sendFeedback(configText, true);
         return 1;
     }
 
-    private static int changeSubscribersOnly(CommandContext<CommandSource> context) {
+    private static int changeChannelConfig(CommandContext<CommandSource> context, String option) {
         final String channelName = StringArgumentType.getString(context, "channel");
-        final boolean subscribersOnly = BoolArgumentType.getBool(context, "subscribersOnly");
-        final TwitchChannel channel = TwitchChannelManager.getChannel(channelName);
+
+        final TwitchChannel channel = TwitchSessionManager.getChannelManager().getChannel(channelName);
         if (channel == null) {
             throw new CommandException(Messages.lang("commands.config.channelNotFound", channelName));
         }
 
-        channel.setSubscribersOnly(subscribersOnly);
-        final ITextComponent configText = Messages.lang("commands.config.channelConfigChanged", channelName, "subscribersOnly", subscribersOnly);
-        context.getSource().sendFeedback(configText, true);
-
-        return 1;
-    }
-
-    private static int changeDeletedMessagesMode(CommandContext<CommandSource> context) {
-        final String channelName = StringArgumentType.getString(context, "channel");
-        final DeletedMessagesMode mode = context.getArgument("mode", DeletedMessagesMode.class);
-        final TwitchChannel channel = TwitchChannelManager.getChannel(channelName);
-        if (channel == null) {
-            throw new CommandException(Messages.lang("commands.config.channelNotFound", channelName));
+        Object value = null;
+        if (option.equals("subscribersOnly")) {
+            final boolean subscribersOnly = BoolArgumentType.getBool(context, "subscribersOnly");
+            channel.setSubscribersOnly(subscribersOnly);
+            value = subscribersOnly;
+        } else if (option.equals("deletedMessagesMode")) {
+            final DeletedMessagesMode mode = context.getArgument("mode", DeletedMessagesMode.class);
+            channel.setDeletedMessagesMode(mode);
+            value = mode;
         }
 
-        channel.setDeletedMessagesMode(mode);
-        final ITextComponent configText = Messages.lang("commands.config.channelConfigChanged", channelName, "deletedMessagesMode", mode);
+        TwitchSessionManager.getChannelManager().save();
+
+        final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
+        final ITextComponent optionText = Messages.styledString(option, TextFormatting.GRAY);
+        final ITextComponent valueText = Messages.styledString(String.valueOf(value), TextFormatting.GREEN);
+        final ITextComponent configText = Messages.lang("commands.config.channelConfigChanged", channelNameText, optionText, valueText);
         context.getSource().sendFeedback(configText, true);
 
         return 1;

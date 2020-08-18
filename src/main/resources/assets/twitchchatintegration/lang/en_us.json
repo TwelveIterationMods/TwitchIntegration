@@ -10,8 +10,16 @@
     "twitchchatintegration.chat.resubscribe": "%s has subscribed for %d months in a row!",
 
     "twitchchatintegration.commands.config.channelNotFound": "Channel %s not found",
-    "twitchchatintegration.commands.config.channelConfig": "[%s] subscribersOnly: %s, deletedMessagesMode: %s",
+    "twitchchatintegration.commands.config.channelConfig": "[%s] %s",
+    "twitchchatintegration.commands.config.channelConfigValues": "subscribersOnly: %s, deletedMessagesMode: %s",
+    "twitchchatintegration.commands.config.channelConfigValue": "[%s] %s is set to %s",
     "twitchchatintegration.commands.config.channelConfigChanged": "[%s] %s set to %s",
+    "twitchchatintegration.commands.channels.noChannels": "No channels configured. Use \"/twitch join\" to join a channel.",
+    "twitchchatintegration.commands.channels.channelList": "Channels: %s",
+    "twitchchatintegration.commands.channels.channelListItem": "%s (joined: %s)",
+    "twitchchatintegration.commands.join": "Joined channel %s.",
+    "twitchchatintegration.commands.leave": "Left channel %s.",
+    "twitchchatintegration.commands.remove": "Removed channel %s.",
 
     "twitchchatintegration.error.read_only_chat": "You can not send messages in anonymous mode.",
 

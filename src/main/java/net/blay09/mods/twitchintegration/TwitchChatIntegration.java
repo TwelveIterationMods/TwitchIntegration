@@ -3,6 +3,7 @@ package net.blay09.mods.twitchintegration;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.command.TwitchCommand;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.SharedConstants;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -28,6 +29,7 @@ public class TwitchChatIntegration {
 
     public TwitchChatIntegration() {
         TwitchAuthManager.loadStoredToken();
+        TwitchSessionManager.init();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, TwitchIntegrationConfig.clientSpec);
 
