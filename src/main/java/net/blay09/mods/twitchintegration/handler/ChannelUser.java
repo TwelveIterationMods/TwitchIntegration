@@ -23,4 +23,12 @@ public class ChannelUser {
         result = 31 * result + username.hashCode();
         return result;
     }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public String getUsername() {
+        return username;
+    }
 }

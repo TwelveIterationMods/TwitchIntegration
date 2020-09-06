@@ -12,6 +12,7 @@
     "twitchchatintegration.chat.giftSubscribeAnonymous": "An anonymous gifter has gifted a subscription to %s!",
     "twitchchatintegration.chat.giftPaidUpgrade": "%s has upgraded their previously gifted subscription by %s!",
     "twitchchatintegration.chat.giftPaidUpgradeAnonymous": "%s has upgraded their previously gifted subscription!",
+    "twitchchatintegration.chat.messageDeleted": "%s: <message deleted>",
 
     "twitchchatintegration.commands.config.channelNotFound": "Channel %s not found",
     "twitchchatintegration.commands.config.channelConfig": "[%s] %s",

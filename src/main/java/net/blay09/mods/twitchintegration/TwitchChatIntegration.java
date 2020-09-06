@@ -17,7 +17,6 @@ import org.apache.logging.log4j.Logger;
 public class TwitchChatIntegration {
 
     // V1 Vanilla-only
-    // - Check if hosts / raids show
     // V2 Chat Tweaks
     // ...
 
