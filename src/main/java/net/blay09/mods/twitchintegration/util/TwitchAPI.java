@@ -66,7 +66,7 @@ public class TwitchAPI {
                         String slashVal = version.getKey();
                         String imageUri = version.getValue().getAsJsonObject().get("image_url_1x").getAsString();
                         TwitchBadge badge = null;
-                        /* TODO try {
+                        /* try {
                             badge = new TwitchBadge(ImageLoader.loadImage(new URI(imageUri), "twitch_" + badgeName + "_" + slashVal), ITooltipProvider.EMPTY);
                         } catch (IOException | URISyntaxException e) {
                             TwitchChatIntegration.logger.error("Could not load global chat badge {}: ", badgeName, e);
@@ -95,7 +95,7 @@ public class TwitchAPI {
                         String slashVal = version.getKey();
                         String imageUri = version.getValue().getAsJsonObject().get("image_url_1x").getAsString();
                         TwitchBadge badge = null;
-                        /* TODO try {
+                        /* try {
                             badge = new TwitchBadge(ImageLoader.loadImage(new URI(imageUri), "twitch_" + channel.getName() + "_" + badgeName + "_" + slashVal), ITooltipProvider.EMPTY);
                         } catch (IOException | URISyntaxException e) {
                             TwitchChatIntegration.logger.error("Could not load chat badge {} for channel {}: ", badgeName, channel.getName(), e);

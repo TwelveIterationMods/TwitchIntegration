@@ -95,7 +95,7 @@ public class VanillaChatConsumer implements ChatConsumer {
                 } else if (channel.getDeletedMessagesMode() == DeletedMessagesMode.Strikethrough) {
                     final TextComponent textComponent = (TextComponent) message.getTextComponent();
                     final IFormattableTextComponent strikethroughText = textComponent.mergeStyle(TextFormatting.STRIKETHROUGH);
-                    Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessageWithOptionalDeletion(strikethroughText, message.getId()); // TODO probably make links unclickable too
+                    Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessageWithOptionalDeletion(strikethroughText, message.getId());
                 } else if (channel.getDeletedMessagesMode() == DeletedMessagesMode.Replace) {
                     final TranslationTextComponent messageDeletedText = Messages.styledLang("chat.messageDeleted", TextFormatting.GRAY, user.getUsername());
                     Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessageWithOptionalDeletion(messageDeletedText, message.getId());

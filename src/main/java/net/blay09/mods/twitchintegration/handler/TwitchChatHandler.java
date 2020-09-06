@@ -68,7 +68,7 @@ public class TwitchChatHandler extends TMIAdapter {
             boolean isSelf = user.getNick().equals(client.getIRCConnection().getNick());
 
             // Apply Twitch Emotes
-            /* TODO Emotes
+            /*
             tmpEmotes.clear();
             List<PositionedEmote> emoteList = (isSelf && !user.hasEmotes()) ? emoteScanner.scanForEmotes(twitchMessage.getMessage(), null) : emoteScanner.scanForEmotes(twitchMessage.getMessage(), noTwitchEmotes);
             if (user.hasEmotes()) {
@@ -83,7 +83,8 @@ public class TwitchChatHandler extends TMIAdapter {
             */
 
             // Apply Emotes
-            /* TODO emotes int index = 0;
+            /*
+            int index = 0;
             StringBuilder sb = new StringBuilder();
             for (PositionedEmote emoteData : emoteList) {
                 if (index < emoteData.getStart()) {
@@ -104,7 +105,7 @@ public class TwitchChatHandler extends TMIAdapter {
             String message = twitchMessage.getMessage();
 
             // Apply Name Badges
-            /* TODO Badges
+            /*
             tmpBadges.clear();
             int badgeIndex = 0;
             if (isSelf && !user.hasBadges()) {
@@ -214,7 +215,7 @@ public class TwitchChatHandler extends TMIAdapter {
             if (TwitchIntegrationConfig.CLIENT.showWhispers.get()) {
                 boolean isSelf = user.getNick().equals(client.getIRCConnection().getNick());
 
-                /* TODO emotes
+                /*
                 // Apply Twitch Emotes
                 tmpEmotes.clear();
                 List<PositionedEmote> emoteList = (isSelf && !user.hasEmotes()) ? emoteScanner.scanForEmotes(message, null) : emoteScanner.scanForEmotes(message, noTwitchEmotes);

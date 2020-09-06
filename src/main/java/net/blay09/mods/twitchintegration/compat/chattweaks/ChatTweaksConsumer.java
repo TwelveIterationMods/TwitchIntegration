@@ -54,7 +54,6 @@
 //    }
 //
 //    public void addSystemMessage(TwitchChannel channel, ITextComponent message) {
-//        // TODO
 //    }
 //
 //    @Override
