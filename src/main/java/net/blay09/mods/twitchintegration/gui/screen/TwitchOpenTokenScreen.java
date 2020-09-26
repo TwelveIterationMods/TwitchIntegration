@@ -38,7 +38,7 @@ public class TwitchOpenTokenScreen extends Screen {
             copyLinkToClipboard();
         }));
 
-        addButton(new Button(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, DialogTexts.field_240633_d_, (button) -> {
+        addButton(new Button(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, DialogTexts.GUI_CANCEL, (button) -> {
             callback.accept(false);
         }));
     }

@@ -27,7 +27,7 @@ public class VanillaChatConsumer implements ChatConsumer {
     public void onChatMessage(TwitchChannel channel, TwitchUser user, TwitchMessage message) {
         Style style = null;
         if (user.getColor() != null) {
-            final Color color = Color.func_240745_a_(user.getColor());
+            final Color color = Color.fromHex(user.getColor());
             style = Style.EMPTY.setColor(color);
         }
 
@@ -65,7 +65,7 @@ public class VanillaChatConsumer implements ChatConsumer {
     public void onWhisperMessage(TwitchUser user, TwitchMessage message) {
         Style style = null;
         if (user.getColor() != null) {
-            final Color color = Color.func_240745_a_(user.getColor());
+            final Color color = Color.fromHex(user.getColor());
             style = Style.EMPTY.setColor(color);
         }
 
