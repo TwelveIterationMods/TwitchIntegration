@@ -9,7 +9,9 @@ import net.blay09.mods.twitchintegration.auth.TwitchAuthManager;
 import net.blay09.mods.twitchintegration.auth.TwitchAuthToken;
 import net.blay09.mods.twitchintegration.chat.TwitchChannel;
 import net.blay09.mods.twitchintegration.handler.TwitchChatHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -112,6 +114,19 @@ public class TwitchSessionManager {
         if (joinedChannels.remove(channel)) {
             if (twitchClient != null) {
                 twitchClient.part("#" + channel.getName().toLowerCase(Locale.ENGLISH));
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            boolean twitchConnected = TwitchSessionManager.isConnected();
+            boolean isInGame = Minecraft.getInstance().player != null;
+            if(twitchConnected && !isInGame) {
+                TwitchSessionManager.disconnect();
+            } else if(!twitchConnected && isInGame) {
+                TwitchSessionManager.connect();
             }
         }
     }

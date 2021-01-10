@@ -116,7 +116,7 @@ public class TwitchCommand {
         TwitchSessionManager.getChannelManager().joinChannel(channelName);
 
         final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
-        context.getSource().sendFeedback(Messages.lang("commands.join", channelNameText), true);
+        context.getSource().sendFeedback(Messages.lang("commands.join", channelNameText), false);
         return 1;
     }
 
@@ -126,7 +126,7 @@ public class TwitchCommand {
         TwitchSessionManager.getChannelManager().leaveChannel(channelName);
 
         final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
-        context.getSource().sendFeedback(Messages.lang("commands.leave", channelNameText), true);
+        context.getSource().sendFeedback(Messages.lang("commands.leave", channelNameText), false);
         return 1;
     }
 
@@ -136,7 +136,7 @@ public class TwitchCommand {
         TwitchSessionManager.getChannelManager().removeChannelByName(channelName);
 
         final ITextComponent channelNameText = Messages.styledString(channelName, TextFormatting.YELLOW);
-        context.getSource().sendFeedback(Messages.lang("commands.remove", channelNameText), true);
+        context.getSource().sendFeedback(Messages.lang("commands.remove", channelNameText), false);
         return 1;
     }
 
@@ -155,7 +155,7 @@ public class TwitchCommand {
         }
         final ITextComponent channelListItemsText = Messages.styledString(builder.toString(), TextFormatting.WHITE);
         final ITextComponent channelListText = Messages.styledLang("commands.channels.channelList", TextFormatting.YELLOW, channelListItemsText);
-        context.getSource().sendFeedback(channelListText, true);
+        context.getSource().sendFeedback(channelListText, false);
         return 1;
     }
 
@@ -176,7 +176,7 @@ public class TwitchCommand {
         final ITextComponent optionText = Messages.styledString(option, TextFormatting.GRAY);
         final ITextComponent valueText = Messages.styledString(String.valueOf(value), TextFormatting.GREEN);
         final ITextComponent configText = Messages.lang("commands.config.channelConfigValue", channelNameText, optionText, valueText);
-        context.getSource().sendFeedback(configText, true);
+        context.getSource().sendFeedback(configText, false);
         return 1;
     }
 
@@ -205,7 +205,7 @@ public class TwitchCommand {
         final ITextComponent optionText = Messages.styledString(option, TextFormatting.GRAY);
         final ITextComponent valueText = Messages.styledString(String.valueOf(value), TextFormatting.GREEN);
         final ITextComponent configText = Messages.lang("commands.config.channelConfigChanged", channelNameText, optionText, valueText);
-        context.getSource().sendFeedback(configText, true);
+        context.getSource().sendFeedback(configText, false);
 
         return 1;
     }
